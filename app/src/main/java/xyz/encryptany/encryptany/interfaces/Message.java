@@ -1,4 +1,6 @@
-package xyz.encryptany.encryptany;
+package xyz.encryptany.encryptany.interfaces;
+
+import java.util.Date;
 
 /**
  * Created by dakfu on 1/26/2017.
@@ -7,5 +9,5 @@ package xyz.encryptany.encryptany;
 public interface Message {
     public String getMessage();
     public String getSender();
-    public String getTimeStamp();
+    public Date getDate();
 }

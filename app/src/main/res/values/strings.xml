@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">EncryptAny</string>
+    <string name="accessibility_service_description">EncryptAny Message Mediation Service</string>
 </resources>
