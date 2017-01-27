@@ -1,10 +1,12 @@
 package xyz.encryptany.encryptany;
 
+import xyz.encryptany.encryptany.Listeners.MessagesUpdatedListener;
+
 /**
  * Created by dakfu on 1/26/2017.
  */
 
-public class Mediator {
+public class Mediator implements MessagesUpdatedListener{
 
     AppAdapterInterface appAdapter;
     UIAdapterInterface uiAdapter;
@@ -12,13 +14,21 @@ public class Mediator {
     ArchiverInterface archiverAdapter;
 
 
-    public Mediator(){
+    public Mediator(AppAdapterInterface appAdapter, UIAdapterInterface uiAdapter, EncryptionInterface encryptionAdapter, ArchiverInterface archiverAdapter){
+        this.appAdapter = appAdapter;
+        this.uiAdapter = uiAdapter;
+        this.encryptionAdapter = encryptionAdapter;
+        this.archiverAdapter = archiverAdapter;
 
     }
 
-    public boolean getMessages(){
+    @Override
+    public void setMessages() {
+
+    }
+    @Override
+    public void getMessages(){
         
-        return false;
     }
 
     public boolean sendMessage(){
