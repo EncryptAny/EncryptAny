@@ -1,12 +1,13 @@
 package xyz.encryptany.encryptany;
 
+import xyz.encryptany.encryptany.Listeners.MessageSendingListener;
 import xyz.encryptany.encryptany.Listeners.MessagesUpdatedListener;
 
 /**
  * Created by dakfu on 1/26/2017.
  */
 
-public class Mediator implements MessagesUpdatedListener{
+public class Mediator implements MessagesUpdatedListener,MessageSendingListener{
 
     AppAdapterInterface appAdapter;
     UIAdapterInterface uiAdapter;
@@ -30,13 +31,18 @@ public class Mediator implements MessagesUpdatedListener{
     public void getMessages(){
         
     }
+    @Override
+    public void sendingMessage() {
 
+    }
     public boolean sendMessage(){
         return false;
 
     }
 
     private boolean encryptMessage(){
+
+
         return false;
     }
 
@@ -59,8 +65,6 @@ public class Mediator implements MessagesUpdatedListener{
     private boolean sendMessageToApp(){
         return false;
     }
-
-
 
 
 
