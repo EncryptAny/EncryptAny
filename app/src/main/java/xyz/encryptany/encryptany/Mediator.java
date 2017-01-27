@@ -6,6 +6,8 @@ package xyz.encryptany.encryptany;
 
 public class Mediator {
 
+    AppAdapterInterface appAdapter;
+    UIAdapterInterface uiAdapter;
 
     public Mediator(){
 
@@ -28,9 +30,23 @@ public class Mediator {
         return false;
     }
 
-    private boolean displayMessage(){
+    private boolean displayReceivedMessage(){
         return false;
     }
+
+    private boolean displaySentMessage(){
+        return false;
+    }
+
+    private boolean receiveMessageFromApp(){
+        return false;
+    }
+
+    private boolean sendMessageToApp(){
+        return false;
+    }
+
+
 
 
 
