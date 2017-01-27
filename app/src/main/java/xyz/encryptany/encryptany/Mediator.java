@@ -8,12 +8,16 @@ public class Mediator {
 
     AppAdapterInterface appAdapter;
     UIAdapterInterface uiAdapter;
+    EncryptionInterface encryptionAdapter;
+    ArchiverInterface archiverAdapter;
+
 
     public Mediator(){
 
     }
 
     public boolean getMessages(){
+        
         return false;
     }
 
