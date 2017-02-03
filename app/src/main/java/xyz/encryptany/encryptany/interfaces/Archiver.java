@@ -5,4 +5,5 @@ package xyz.encryptany.encryptany.interfaces;
  */
 
 public interface Archiver {
+    public void archiveMessage(Message message);
 }
