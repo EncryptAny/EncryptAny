@@ -23,7 +23,7 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".MyDialog" android:launchMode="singleTask"
+        <activity android:name=".Overlay" android:launchMode="singleTask"
             android:theme="@android:style/Theme.Translucent" />
 
         <service android:name=".services.AccessibilityAppAdapter"

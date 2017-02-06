@@ -205,8 +205,8 @@ public class ChatHeadService extends Service {
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
-                            if(MyDialog.active){
-                                MyDialog.myDialog.finish();
+                            if(Overlay.active){
+                                Overlay.overlayActivity.finish();
                             }
                             Log.d(Utils.LogTag, "Stop ChatHeadService");
                             stopService(new Intent(ChatHeadService.this, ChatHeadService.class));
@@ -370,12 +370,12 @@ public class ChatHeadService extends Service {
 
     private void chathead_click(){
         Log.d(Utils.LogTag, "chathead_click()");
-        if(MyDialog.active){
+        if(Overlay.active){
             Log.d(Utils.LogTag, "myDialog.finish()");
-            MyDialog.myDialog.finish();
+            Overlay.overlayActivity.finish();
         }else{
             Log.d(Utils.LogTag, "Open myDialog");
-            Intent it = new Intent(this,MyDialog.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Intent it = new Intent(this,Overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(it);
         }
 
