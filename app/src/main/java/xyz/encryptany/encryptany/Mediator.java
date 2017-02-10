@@ -5,6 +5,7 @@ import xyz.encryptany.encryptany.interfaces.Archiver;
 import xyz.encryptany.encryptany.interfaces.Encryptor;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.UIAdapter;
+import xyz.encryptany.encryptany.listeners.EncryptionListener;
 import xyz.encryptany.encryptany.listeners.MessageSentListener;
 import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
 
@@ -12,7 +13,7 @@ import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
  * Created by dakfu on 1/26/2017.
  */
 
-public class Mediator implements MessagesUpdatedListener, MessageSentListener {
+public class Mediator implements MessagesUpdatedListener, EncryptionListener {
 
     AppAdapter appAdapter;
     UIAdapter uiAdapter;
@@ -71,9 +72,17 @@ public class Mediator implements MessagesUpdatedListener, MessageSentListener {
         return false;
     }
 
+    @Override
+    public void sendingMessage(String result) {
+
+    }
 
     @Override
-    public void sendMessage(Message msgSent) {
+    public void conversationReady() {
+
+    }
+    @Override
+    public void messageDecrypted(String result){
 
     }
 }

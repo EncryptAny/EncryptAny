@@ -9,5 +9,6 @@ import java.util.Date;
 public interface Message {
     public String getMessage();
     public String getSender();
+    public String getApp();
     public Date getDate();
 }

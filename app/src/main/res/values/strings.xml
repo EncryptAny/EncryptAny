@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">EncryptAny</string>
     <string name="accessibility_service_description">EncryptAny Message Mediation Service</string>
+    <string name="android_protocol">Android</string>
 </resources>

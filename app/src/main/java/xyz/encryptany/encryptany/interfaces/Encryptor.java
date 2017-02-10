@@ -5,8 +5,8 @@ package xyz.encryptany.encryptany.interfaces;
  */
 
 public interface Encryptor {
-    public void initialization();
-    public void encryptMessage();
-    public void decryptMessage();
+    public void initialization(Message message);
+    public void encryptMessage(Message message);
+    public void decryptMessage(Message message);
     public void setKeys();
 }
