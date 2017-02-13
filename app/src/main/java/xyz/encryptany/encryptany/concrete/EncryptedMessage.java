@@ -11,15 +11,15 @@ import xyz.encryptany.encryptany.interfaces.Message;
 public class EncryptedMessage implements Message {
 
     private String encryptedTxt;
-    private String sender;
-    private String hash;
-    private long unixTS;
+    private String source;
+    private String app;
+    private Date date;
 
-    public EncryptedMessage(String encryptedTxt, String sender, String hash, long unixTS) {
+    public EncryptedMessage(String encryptedTxt, String source, String app, Date date) {
         this.encryptedTxt = encryptedTxt;
-        this.sender = sender;
-        this.hash = hash;
-        this.unixTS = unixTS;
+        this.source = source;
+        this.app = app;
+        this.date = date;
     }
 
     @Override
@@ -28,12 +28,17 @@ public class EncryptedMessage implements Message {
     }
 
     @Override
-    public String getSender() {
-        return null;
+    public String getOtherParticipant() {
+        return source;
+    }
+
+    @Override
+    public String getApp() {
+        return app;
     }
 
     @Override
     public Date getDate() {
-        return null;
+        return date;
     }
 }

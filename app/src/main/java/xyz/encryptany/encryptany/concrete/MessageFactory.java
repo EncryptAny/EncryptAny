@@ -1,5 +1,7 @@
 package xyz.encryptany.encryptany.concrete;
 
+import java.util.Date;
+
 import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
@@ -7,12 +9,17 @@ import xyz.encryptany.encryptany.interfaces.Message;
  */
 
 public abstract class MessageFactory {
+
     public MessageFactory(){
 
     }
 
-    public Message createNewMessage(String message, String sender){
-        return null;
+    public Message createNewInitMessage(String source,String app){
+        return new EncryptedMessage("LetsStartAnOTRConvo",source, app, new Date());
     }
+    public Message createNewMessage(String message, String source, String app){
+        return new EncryptedMessage(message, source, app, new Date());
+    }
+
 
 }

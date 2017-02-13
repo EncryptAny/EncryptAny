@@ -8,7 +8,7 @@ import java.util.Date;
 
 public interface Message {
     public String getMessage();
-    public String getSender();
+    public String getOtherParticipant();
     public String getApp();
     public Date getDate();
 }

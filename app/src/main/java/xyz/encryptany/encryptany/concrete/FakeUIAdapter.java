@@ -2,6 +2,7 @@ package xyz.encryptany.encryptany.concrete;
 
 import android.util.Log;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import xyz.encryptany.encryptany.interfaces.Message;
@@ -37,7 +38,7 @@ public class FakeUIAdapter implements UIAdapter {
     public void setMessaageSentListener(MessageSentListener msl) {
         this.msl = msl;
         fakeDelay();
-        msl.sendMessage(new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", 12345));
+        msl.sendMessage(new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", new Date()));
     }
 
     @Override
