@@ -18,6 +18,8 @@ import xyz.encryptany.encryptany.interfaces.Message;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter {
 
+    private static final boolean annoyCory = false;
+
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -28,7 +30,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             return;
         }
 
-        if (source != null & event.getClassName().equals("android.widget.EditText")) {
+        if (annoyCory && source != null & event.getClassName().equals("android.widget.EditText")) {
             Bundle arguments = new Bundle();
             arguments.putCharSequence(AccessibilityNodeInfo
                     .ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "android");
