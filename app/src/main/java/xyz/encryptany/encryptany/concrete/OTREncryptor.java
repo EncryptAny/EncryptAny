@@ -101,7 +101,7 @@ public class OTREncryptor implements Encryptor {
             StringTLV stlv = conversation.messageReceiving("me", app, sender, messageContent, callback);
             if (stlv != null) {
                 messageContent = stlv.msg;
-                encryptionListener.messageDecrypted(messageContent);
+                encryptionListener.messageDecrypted(messageContent,sender,app);
                 //System.out.println("\033[31mFrom OTR:"+res.length()+":\033[0m"+res);
             }
         }catch (Exception e) {
@@ -130,7 +130,7 @@ class LocalCallback implements OTRCallbacks{
                 +msg.length()+":\033[35m"+msg+"\033[0m");
         //out.println(msg);
        // out.flush();
-        encryptionListener.sendingMessage(msg);
+        encryptionListener.sendingMessage(msg, rec, prot);
 
 
     }
@@ -141,6 +141,7 @@ class LocalCallback implements OTRCallbacks{
 
     public void goneSecure(OTRContext context) {
         System.out.println("\033[31mAKE succeeded\033[0m");
+        encryptionListener.conversationReady();
     }
 
     public int isLoggedIn(String accountname, String protocol,

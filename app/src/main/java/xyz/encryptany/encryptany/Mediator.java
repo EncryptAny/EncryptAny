@@ -1,5 +1,6 @@
 package xyz.encryptany.encryptany;
 
+import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Archiver;
 import xyz.encryptany.encryptany.interfaces.Encryptor;
@@ -19,6 +20,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
     UIAdapter uiAdapter;
     Encryptor encryptionAdapter;
     Archiver archiverAdapter;
+    MessageFactory messageFactory;
 
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter){
@@ -26,6 +28,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         this.uiAdapter = uiAdapter;
         this.encryptionAdapter = encryptionAdapter;
         this.archiverAdapter = archiverAdapter;
+        messageFactory = new MessageFactory();
 
     }
 
@@ -41,13 +44,18 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
 //    public void sendingMessage() {
 //
 //    }
-    public boolean sendMessage(){
+    public boolean sendMessage(String messageString,String otherParticipant, String appSource){
+        //send message to encryption adapter and then to archiver and app adapter
+        //generate message package to send to encryption adapter
+        Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource);
+        encryptMessage(payload);
         return false;
 
     }
 
-    private boolean encryptMessage(){
-
+    private boolean encryptMessage(Message message){
+        //send message to encryption adapter
+        encryptionAdapter.encryptMessage(message);
 
         return false;
     }
@@ -56,7 +64,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         return false;
     }
 
-    private boolean displayReceivedMessage(){
+    private boolean displayReceivedMessage(Message message){
         return false;
     }
 
@@ -68,21 +76,27 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         return false;
     }
 
-    private boolean sendMessageToApp(){
+    private boolean sendMessageToApp(Message message){
+        //send the message package to the app adapter to deal with
+        //also call displaySentMessage I guess?
         return false;
     }
 
     @Override
-    public void sendingMessage(String result) {
-
+    public void sendingMessage(String result, String otherParticipant, String appSource) {
+        //app adapter call with new message from the encrypted string
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource);
+        sendMessageToApp(message);
     }
 
     @Override
     public void conversationReady() {
-
+        //UI update to allow conversation to begin
     }
     @Override
-    public void messageDecrypted(String result){
-
+    public void messageDecrypted(String result,String otherParticipant, String appSource){
+        //display decrypted message to UI and store in archiver
+        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource);
+        displayReceivedMessage(payload);
     }
 }
