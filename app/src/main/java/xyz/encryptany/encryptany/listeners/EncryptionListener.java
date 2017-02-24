@@ -5,8 +5,8 @@ package xyz.encryptany.encryptany.listeners;
  */
 
 public interface EncryptionListener {
-    public void sendingMessage(String result);
+    public void sendingMessage(String msg, String otherParticipant, String appSource);
     public void conversationReady();
-    public void messageDecrypted(String result);
+    public void messageDecrypted(String result,String otherParticipant, String appSource);
 
 }
