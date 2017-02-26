@@ -10,6 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.Date;
+
+import xyz.encryptany.encryptany.concrete.EncryptedMessage;
+
 public class Overlay extends Activity {
     public static boolean active = false;
     public static Activity overlayActivity;
@@ -18,7 +22,16 @@ public class Overlay extends Activity {
     private OverlayRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    private String[] dummyData = {"dummymsg1","dummymsg2","dummymsg3","dummymsg4","dummymsg5"};
+    private EncryptedMessage[] GenDummyData()
+    {
+        final int dummyAmount = 20;
+        EncryptedMessage[] dummydata = new EncryptedMessage[dummyAmount];
+        for (int i = 1; i != dummyAmount+1; ++i)
+        {
+            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date());
+        }
+        return dummydata;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +47,7 @@ public class Overlay extends Activity {
         mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new OverlayRecyclerViewAdapter(dummyData);
+        mAdapter = new OverlayRecyclerViewAdapter(GenDummyData());
         recyclerView.setAdapter(mAdapter);
 
         overlayActivity = Overlay.this;
