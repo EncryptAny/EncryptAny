@@ -29,4 +29,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
     compile files('../otr-library/otr-library.jar')
     compile 'com.android.support:recyclerview-v7:25.0.0'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.6@aar'
+    compile project(':android-database-sqlcipher-3.5.6')
 }

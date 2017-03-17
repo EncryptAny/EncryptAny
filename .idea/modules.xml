@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/EncryptAny.iml" filepath="$PROJECT_DIR$/EncryptAny.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android-database-sqlcipher-3.5.6/android-database-sqlcipher-3.5.6.iml" filepath="$PROJECT_DIR$/android-database-sqlcipher-3.5.6/android-database-sqlcipher-3.5.6.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/otr-library/otr-library.iml" filepath="$PROJECT_DIR$/otr-library/otr-library.iml" />
     </modules>

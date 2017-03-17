@@ -48,7 +48,7 @@ public class OTREncryptor implements Encryptor {
         //The message in the case will be loaded with our default string sent from the UI Adapter
         //The UI adapter will send the default string to the mediator and the mediator will construct the message
         //with the appropriate target recipient as well as what app the message is going through.
-        String recipient = message.getOtherParticipant();
+        String recipient = message.getAuthor();
         String messageContent = message.getMessage();
 
         //The app isn't necessarilly the required string for this function, a secondary string to uniquely identify the
@@ -77,7 +77,7 @@ public class OTREncryptor implements Encryptor {
 
 
     public void encryptMessage(Message message ) {
-        String recipient = message.getOtherParticipant();
+        String recipient = message.getAuthor();
         String messageContent = message.getMessage();
         String app = message.getApp();
         try{
@@ -94,7 +94,7 @@ public class OTREncryptor implements Encryptor {
     @Override
     public void decryptMessage(Message message) {
         String app = message.getApp();
-        String sender = message.getOtherParticipant();
+        String sender = message.getAuthor();
         String messageContent = message.getMessage();
         try {
 

@@ -1,1 +1,1 @@
-include ':app',':otr-library'
+include ':app', ':otr-library', ':android-database-sqlcipher-3.5.6'

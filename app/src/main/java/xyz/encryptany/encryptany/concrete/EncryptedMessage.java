@@ -28,7 +28,7 @@ public class EncryptedMessage implements Message {
     }
 
     @Override
-    public String getOtherParticipant() {
+    public String getAuthor() {
         return source;
     }
 
