@@ -10,5 +10,5 @@ public interface Message {
     public String getMessage();
     public String getAuthor();
     public String getApp();
-    public Date getDate();
+    public long getDate();
 }

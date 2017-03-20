@@ -3,6 +3,8 @@ package xyz.encryptany.encryptany.concrete;
 import java.util.Iterator;
 
 import java.io.File;
+
+import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import android.app.Activity;
 import android.content.ContentValues;
@@ -19,28 +21,34 @@ import xyz.encryptany.encryptany.interfaces.Message;
 
 public class SQLArchiver implements Archiver {
 
+    private SQLiteDatabase db;
+
     public SQLArchiver(Activity activity){
         InitializeSQLCipher(activity);
     }
     @Override
     public void archiveMessage(Message message) {
-
+        ContentValues values = new ContentValues();
+        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_MESSAGE, message.getMessage());
+        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION, message.getApp());
+        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR, message.getAuthor());
+        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_DATE, message.getDate());
+// Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert( MessageArchiverContract.MessageEntry.TABLE_NAME , null, values);
     }
 
-    
+    public Cursor retrieveMessages(){
+        Cursor cursor = db.rawQuery("SELECT * FROM '" + MessageArchiverContract.MessageEntry.TABLE_NAME + "';", null);
+        //this cursor should be given to the message factory to contstruct the array of messages to be used in the interface adapter
+        return cursor;
+    }
 
     private void InitializeSQLCipher(Activity activity) {
         SQLiteDatabase.loadLibs(activity);
         //TODO: create user determined sql database password
-        SQLiteDatabase db = MessageArchiverDbHelper.getInstance(activity).getWritableDatabase("somePass");
+        db = MessageArchiverDbHelper.getInstance(activity).getWritableDatabase("somePass");
 
-        ContentValues values = new ContentValues();
-        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR, "Message Author");
-        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_MESSAGE, "Message Content");
-        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_DATE, "Date Message Sent");
-        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION, "Message Application Source");
 
-        db.insert(MessageArchiverContract.MessageEntry.TABLE_NAME, null, values);
 
 
     }
