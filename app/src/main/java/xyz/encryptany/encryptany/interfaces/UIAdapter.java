@@ -8,6 +8,6 @@ import xyz.encryptany.encryptany.listeners.MessageSentListener;
 
 public interface UIAdapter {
 
-    void setMessaageSentListener(MessageSentListener msl);
+    void setMessageSentListener(MessageSentListener msl);
     void setMessages(Message[] msg);
 }

@@ -16,13 +16,14 @@ import xyz.encryptany.encryptany.listeners.MessageSentListener;
  */
 
 public class FakeUIAdapter implements UIAdapter {
+    private static final int DELAY_SECS = 5;
     private MessageSentListener msl = null;
     Message[] msgs = null;
 
-    private static void fakeDelay() {
+    public static void fakeDelay() {
         try {
-            for (int i=0; i!=5; ++i) {
-                Log.d("MAXWELL", "" + (5-i) + " Seconds Left Until Interaction");
+            for (int i=0; i!=DELAY_SECS; ++i) {
+                Log.d("MAXWELL", "" + (DELAY_SECS-i) + " Seconds Left Until Interaction");
                 TimeUnit.SECONDS.sleep(1);
             }
 
@@ -35,7 +36,7 @@ public class FakeUIAdapter implements UIAdapter {
     }
 
     @Override
-    public void setMessaageSentListener(MessageSentListener msl) {
+    public void setMessageSentListener(MessageSentListener msl) {
         this.msl = msl;
         fakeDelay();
         msl.sendMessage(new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", new Date().getTime()));

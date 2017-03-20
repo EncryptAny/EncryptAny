@@ -12,28 +12,35 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import xyz.encryptany.encryptany.concrete.JSONMessageCodecStrategy;
 import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter {
 
-    private static final boolean annoyCory = false;
-
+    private static final boolean ENABLE_AUTOFILL = true;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Log.d("MAXWELL", event.toString());
+        Log.d("MAXWELL", event.getClassName().toString());
 
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) {
             return;
         }
+        Log.d("MAXWELL", event.getClassName().toString());
 
-        if (annoyCory && source != null & event.getClassName().equals("android.widget.EditText")) {
+        // Attempt to find an EditText (so we can try to auto-fill it!)
+        // TODO determine if indiscriminate filling is bad.
+        if (ENABLE_AUTOFILL && source != null & event.getClassName().equals("android.widget.EditText")) {
             Bundle arguments = new Bundle();
-            arguments.putCharSequence(AccessibilityNodeInfo
-                    .ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "android");
+            arguments.putCharSequence(
+                    AccessibilityNodeInfo
+                    .ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                    JSONMessageCodecStrategy.EXAMPLE_JSON   // TODO Undo hardcoded text
+            );
             source.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
         }
 
@@ -76,6 +83,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 
     @Override
     public boolean sendMessage(String message) {
+
         return false;
     }
 

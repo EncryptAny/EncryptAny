@@ -120,7 +120,6 @@ public class OTREncryptor implements Encryptor {
         //The local callback is implemented within this file
         callback = new LocalCallback(encryptionListener);
     }
-
 }
 class LocalCallback implements OTRCallbacks{
 

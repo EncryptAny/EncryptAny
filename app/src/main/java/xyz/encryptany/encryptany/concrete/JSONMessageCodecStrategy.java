@@ -11,7 +11,7 @@ import xyz.encryptany.encryptany.interfaces.MessageCodecStrategy;
 
 public class JSONMessageCodecStrategy implements MessageCodecStrategy {
 
-    private static String exampleJSON = "{\"encryptedTxt\":\"secret text\",\"hash\":\"0235\",\"sender\":\"Max Fresonke\",\"unixTS\":1485845807}";
+    public static final String EXAMPLE_JSON = "{\"encryptedTxt\":\"secret text\",\"hash\":\"0235\",\"sender\":\"Max Fresonke\",\"unixTS\":1485845807}";
     @Override
     public Message parseText(String rawText) {
         Gson gson = new Gson();
@@ -24,6 +24,4 @@ public class JSONMessageCodecStrategy implements MessageCodecStrategy {
         Gson gson = new Gson();
         return gson.toJson(msg);
     }
-
-
 }

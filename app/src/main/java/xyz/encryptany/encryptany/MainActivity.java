@@ -9,11 +9,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import xyz.encryptany.encryptany.concrete.FakeUIAdapter;
+import xyz.encryptany.encryptany.concrete.OTREncryptor;
+import xyz.encryptany.encryptany.services.AccessibilityAppAdapter;
+
 public class MainActivity extends AppCompatActivity {
 
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD = 1234;
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD_MSG = 5678;
-    public static Button btnStartService, btnShowMsg;
+    public Button btnStartService, btnShowMsg;
+    private Mediator m = null;
+
+    // MAXWELL DEBUG
+    FakeUIAdapter fui = new FakeUIAdapter();
+    // END MAXWELL DEBUG
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +35,16 @@ public class MainActivity extends AppCompatActivity {
 
         btnStartService.setOnClickListener(lst_StartService);
         btnShowMsg.setOnClickListener(lst_ShowMsg);
+
+        m = new Mediator(new AccessibilityAppAdapter(), fui, new OTREncryptor(null), null);
+        Log.d("MAXWELL", "Activity started");
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("MAXWELL", "Activity Paused");
     }
 
     Button.OnClickListener lst_StartService = new Button.OnClickListener(){
@@ -35,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(Utils.LogTag, "lst_StartService -> Utils.canDrawOverlays(Main.this): " + Utils.canDrawOverlays(MainActivity.this));
 
             if(Utils.canDrawOverlays(MainActivity.this))
+                // Add debug code to run here
                 startChatHead();
             else{
                 requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD);
