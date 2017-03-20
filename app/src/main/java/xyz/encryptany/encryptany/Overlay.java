@@ -1,14 +1,9 @@
 package xyz.encryptany.encryptany;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.Date;
 
@@ -36,7 +31,7 @@ public class Overlay extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.overlay);
+        setContentView(R.layout.overlay_recycler_view);
         recyclerView = (RecyclerView) findViewById(R.id.overlayRecyclerView);
 
         // use this setting to improve performance if you know that changes

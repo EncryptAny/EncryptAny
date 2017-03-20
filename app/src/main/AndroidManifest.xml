@@ -22,9 +22,13 @@
             android:name=".ChatHeadService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name=".OverlayService"
+            android:enabled="true"
+            android:exported="true" />
 
-        <activity android:name=".Overlay" android:launchMode="singleTask"
-            android:theme="@android:style/Theme.Translucent" />
+        <activity android:name=".Overlay" android:launchMode="singleTask" />
+            <!--android:theme="@android:style/Theme.Translucent" />-->
 
         <service android:name=".services.AccessibilityAppAdapter"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">

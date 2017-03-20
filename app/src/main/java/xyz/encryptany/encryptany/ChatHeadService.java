@@ -371,12 +371,13 @@ public class ChatHeadService extends Service {
     private void chathead_click(){
         Log.d(Utils.LogTag, "chathead_click()");
         if(Overlay.active){
-            Log.d(Utils.LogTag, "myDialog.finish()");
-            Overlay.overlayActivity.finish();
+            //Log.d(Utils.LogTag, "myDialog.finish()");
+            //overlay.overlayActivity.finish();
         }else{
-            Log.d(Utils.LogTag, "Open myDialog");
-            Intent it = new Intent(this,Overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(it);
+            Log.d(Utils.LogTag, "Starting overlay service");
+            //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            //startActivity(it);
+            startService(new Intent(this, OverlayService.class));
         }
 
     }
