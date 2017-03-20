@@ -5,18 +5,17 @@ import java.util.Date;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
- * Created by Max on 1/31/2017.
+ * Created by dakfu on 3/20/2017.
  */
 
-public class EncryptedMessage implements Message {
-
-    private String encryptedTxt;
+public class UnencryptedMessage implements Message {
+    private String unencryptedTxt;
     private String author;
     private String app;
     private long date;
 
-    public EncryptedMessage(String encryptedTxt, String author, String app, long date) {
-        this.encryptedTxt = encryptedTxt;
+    public UnencryptedMessage(String unencryptedTxt, String author, String app, long date) {
+        this.unencryptedTxt = unencryptedTxt;
         this.author = author;
         this.app = app;
         this.date = date;
@@ -24,7 +23,7 @@ public class EncryptedMessage implements Message {
 
     @Override
     public String getMessage() {
-        return encryptedTxt;
+        return unencryptedTxt;
     }
 
     @Override
