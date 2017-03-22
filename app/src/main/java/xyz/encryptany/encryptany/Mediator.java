@@ -49,6 +49,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         //generate message package to send to encryption adapter
         Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource);
         encryptMessage(payload);
+        archiveMessage(payload);
         return false;
 
     }
@@ -60,8 +61,10 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         return false;
     }
 
-    private boolean archiveMessage(){
-        return false;
+    private boolean archiveMessage(Message message){
+        archiverAdapter.archiveMessage(message);
+
+        return true;
     }
 
     private boolean displayReceivedMessage(Message message){
@@ -87,6 +90,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource);
         sendMessageToApp(message);
+
     }
 
     @Override
@@ -98,5 +102,6 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
         //display decrypted message to UI and store in archiver
         Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource);
         displayReceivedMessage(payload);
+        archiveMessage(payload);
     }
 }

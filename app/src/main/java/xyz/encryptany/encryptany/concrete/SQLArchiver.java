@@ -37,12 +37,16 @@ public class SQLArchiver implements Archiver {
         long newRowId = db.insert( MessageArchiverContract.MessageEntry.TABLE_NAME , null, values);
     }
 
-    public Cursor retrieveMessages(){
+    public Cursor retrieveAllMessages(){
         Cursor cursor = db.rawQuery("SELECT * FROM '" + MessageArchiverContract.MessageEntry.TABLE_NAME + "';", null);
         //this cursor should be given to the message factory to contstruct the array of messages to be used in the interface adapter
         return cursor;
     }
-
+    public Cursor retrieveAppMessages(String app){
+        Cursor cursor = db.rawQuery("SELECT * FROM '" + MessageArchiverContract.MessageEntry.TABLE_NAME + "' WHERE '" + MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION + "'== '" + app + "';", null);
+        //this cursor should be given to the message factory to contstruct the array of messages to be used in the interface adapter
+        return cursor;
+    }
     private void InitializeSQLCipher(Activity activity) {
         SQLiteDatabase.loadLibs(activity);
         //TODO: create user determined sql database password
