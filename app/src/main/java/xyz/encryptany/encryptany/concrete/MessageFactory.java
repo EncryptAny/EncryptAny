@@ -23,7 +23,7 @@ public class MessageFactory {
     public Message createNewMessage(String message, String otherParticipant, String app){
         return new EncryptedMessage(message, otherParticipant, app, new Date().getTime());
     }
-    public Message[] reconstructConversation(Cursor cursor){
+    public Message[] reconstructConversationMessages(Cursor cursor){
         cursor.moveToFirst();
         Message messages[] = new Message[cursor.getCount()];
         String author;
