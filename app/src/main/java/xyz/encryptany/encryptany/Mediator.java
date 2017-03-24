@@ -44,7 +44,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener {
 //    public void sendingMessage() {
 //
 //    }
-    public boolean sendMessage(String messageString,String otherParticipant, String appSource){
+    public boolean sendMessageFromUIAdapter(String messageString,String otherParticipant, String appSource){
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
         Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource);
