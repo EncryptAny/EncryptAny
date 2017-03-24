@@ -28,7 +28,7 @@ public class Overlay extends Activity {
         EncryptedMessage[] dummydata = new EncryptedMessage[dummyAmount];
         for (int i = 1; i != dummyAmount+1; ++i)
         {
-            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date());
+            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date().getTime());
         }
         return dummydata;
     }

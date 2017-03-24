@@ -32,8 +32,8 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
 
     @Override
     public void onBindViewHolder(OverlayRecyclerViewAdapter.ViewHolder holder, int position) {
-        holder.tvMsgSender.setText(mMsgs[position].getOtherParticipant());
-        holder.tvMsgTimestamp.setText(mMsgs[position].getDate().toString());
+        holder.tvMsgSender.setText(mMsgs[position].getAuthor());
+        holder.tvMsgTimestamp.setText(Long.toString(mMsgs[position].getDate()));
         holder.tvMsgContent.setText(mMsgs[position].getMessage());
     }
 
