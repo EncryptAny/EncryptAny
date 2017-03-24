@@ -1,10 +1,11 @@
-package xyz.encryptany.encryptany.concrete;
+package xyz.encryptany.encryptany.testing;
 
 import android.util.Log;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.UIAdapter;
 import xyz.encryptany.encryptany.listeners.MessageSentListener;
@@ -19,6 +20,8 @@ public class FakeUIAdapter implements UIAdapter {
     private static final int DELAY_SECS = 5;
     private MessageSentListener msl = null;
     Message[] msgs = null;
+
+    private final Message dummyMsg = new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", new Date());
 
     public static void fakeDelay() {
         try {
@@ -39,7 +42,7 @@ public class FakeUIAdapter implements UIAdapter {
     public void setMessageSentListener(MessageSentListener msl) {
         this.msl = msl;
         fakeDelay();
-        msl.sendMessage(new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", new Date().getTime()));
+        msl.sendMessage(dummyMsg);
     }
 
     @Override

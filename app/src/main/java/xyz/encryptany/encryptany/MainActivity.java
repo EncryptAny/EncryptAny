@@ -9,9 +9,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import xyz.encryptany.encryptany.concrete.FakeUIAdapter;
+import xyz.encryptany.encryptany.testing.FakeUIAdapter;
 import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.services.AccessibilityAppAdapter;
+import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         btnStartService.setOnClickListener(lst_StartService);
         btnShowMsg.setOnClickListener(lst_ShowMsg);
 
-        m = new Mediator(new AccessibilityAppAdapter(), fui, new OTREncryptor(null), null);
+        m = new Mediator(new AccessibilityAppAdapter(), fui, new NoOpEncryptor(), null);
         Log.d("MAXWELL", "Activity started");
 
     }
@@ -54,10 +55,13 @@ public class MainActivity extends AppCompatActivity {
             // TODO Auto-generated method stub
             Log.d(Utils.LogTag, "lst_StartService -> Utils.canDrawOverlays(Main.this): " + Utils.canDrawOverlays(MainActivity.this));
 
-            if(Utils.canDrawOverlays(MainActivity.this))
+            if(Utils.canDrawOverlays(MainActivity.this)) {
                 // Add debug code to run here
+                // BEGIN MAXWELL DEBUG
+                fui.fakeDelay();
+                // END MAXWELL DEBUG
                 startChatHead();
-            else{
+            } else {
                 requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD);
             }
         }
