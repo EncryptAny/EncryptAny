@@ -19,12 +19,12 @@ public class NoOpEncryptor implements Encryptor {
 
     @Override
     public void encryptMessage(Message message) {
-        el.sendingMessage(message.getMessage());
+        el.sendingMessage(message.getMessage(), message.getAuthor(), message.getApp());
     }
 
     @Override
     public void decryptMessage(Message message) {
-        el.messageDecrypted(message.getMessage());
+        el.messageDecrypted(message.getMessage(), message.getAuthor(), message.getApp());
     }
 
     @Override

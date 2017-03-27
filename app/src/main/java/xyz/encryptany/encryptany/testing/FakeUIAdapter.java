@@ -21,7 +21,7 @@ public class FakeUIAdapter implements UIAdapter {
     private MessageSentListener msl = null;
     Message[] msgs = null;
 
-    private final Message dummyMsg = new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", new Date());
+    private final Message dummyMsg = new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", (new Date()).getTime());
 
     public static void fakeDelay() {
         try {
