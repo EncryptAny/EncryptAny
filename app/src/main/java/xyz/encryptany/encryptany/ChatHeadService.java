@@ -30,6 +30,7 @@ public class ChatHeadService extends Service {
     private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
     private Point szWindow = new Point();
     private boolean isLeft = true;
+    private boolean serviceRunning = false;
     private String sMsg = "";
 
     @SuppressWarnings("deprecation")
@@ -317,11 +318,11 @@ public class ChatHeadService extends Service {
         Log.d(Utils.LogTag, "resetPosition()");
         if(x_cord_now <= szWindow.x / 2){
             isLeft = true;
-            moveToLeft(x_cord_now);
+            //moveToLeft(x_cord_now);
 
         } else {
             isLeft = false;
-            moveToRight(x_cord_now);
+            //moveToRight(x_cord_now);
 
         }
 
@@ -370,14 +371,15 @@ public class ChatHeadService extends Service {
 
     private void chathead_click(){
         Log.d(Utils.LogTag, "chathead_click()");
-        if(Overlay.active){
-            //Log.d(Utils.LogTag, "myDialog.finish()");
-            //overlay.overlayActivity.finish();
+        if(serviceRunning){
+            stopService(new Intent(this, OverlayService.class));
+            serviceRunning = false;
         }else{
             Log.d(Utils.LogTag, "Starting overlay service");
             //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
             //startActivity(it);
             startService(new Intent(this, OverlayService.class));
+            serviceRunning = true;
         }
 
     }

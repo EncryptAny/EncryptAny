@@ -1,15 +1,19 @@
 package xyz.encryptany.encryptany;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,7 +21,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -29,13 +37,11 @@ import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 
 public class OverlayService extends Service {
     private WindowManager windowManager;
-    private RelativeLayout overlayView, removeView;
-    private LinearLayout txtView, txt_linearlayout;
-    private TextView  txt1;
-    private ImageView removeImg;
+    private RelativeLayout overlayView, editTextView;
+    private EditText overlayEditText;
+    private Button overlayEditTextSend, overlayShowEditText;
     private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
     private Point szWindow = new Point();
-    private boolean isLeft = true;
     private String sMsg = "";
     private RecyclerView recyclerView;
     private OverlayRecyclerViewAdapter mAdapter;
@@ -68,30 +74,8 @@ public class OverlayService extends Service {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
 
-        Log.d(Utils.LogTag, "Inflate removeView");
-        removeView = (RelativeLayout)inflater.inflate(R.layout.remove, null);
-        WindowManager.LayoutParams paramRemove = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                //WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                //PixelFormat.TRANSLUCENT);
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
-                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.RGB_888);
-        paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
 
-        Log.d(Utils.LogTag, "removeView.setVisibility(View.GONE)");
-        removeView.setVisibility(View.GONE);
-        removeImg = (ImageView)removeView.findViewById(R.id.remove_img);
-        Log.d(Utils.LogTag, "addView removeView");
-        windowManager.addView(removeView, paramRemove);
-
-
-        //chatheadView = (RelativeLayout) inflater.inflate(R.layout.chathead, null);
         overlayView = (RelativeLayout) inflater.inflate(R.layout.overlay, null);
-
         recyclerView = (RecyclerView) inflater.inflate(R.layout.overlay_recycler_view, null);
 
         // use this setting to improve performance if you know that changes
@@ -102,11 +86,11 @@ public class OverlayService extends Service {
         mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new OverlayRecyclerViewAdapter(GenDummyData());
+        mAdapter = new OverlayRecyclerViewAdapter();
         recyclerView.setAdapter(mAdapter);
 
         overlayView.addView(recyclerView);
-        //chatheadImg = (ImageView)chatheadView.findViewById(R.id.chathead_img);
+
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -116,18 +100,78 @@ public class OverlayService extends Service {
             int h = windowManager.getDefaultDisplay().getHeight();
             szWindow.set(w, h);
         }
-
+        //TODO: Modify WindowManager size
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                300,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                600,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.LEFT;
+        //params.gravity = Gravity.TOP | Gravity.RIGHT;
         params.x = 0;
         params.y = 100;
         Log.d(Utils.LogTag, "Add chatheadView");
         windowManager.addView(overlayView, params);
+
+        overlayShowEditText = (Button)overlayView.findViewById(R.id.overlayEditTextShow);
+        overlayShowEditText.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        editTextView.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
+
+        // WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        // Combined with
+        // WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        // Makes the edit text always receive text
+        editTextView = (RelativeLayout)inflater.inflate(R.layout.overlay_edit_text, null);
+        overlayEditText = (EditText) editTextView.findViewById(R.id.editText);
+        editTextView.setVisibility(View.GONE);
+        overlayEditTextSend = (Button)editTextView.findViewById(R.id.overlayTextSend);
+        overlayEditTextSend.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Grab text first
+                        editTextView.clearFocus();
+                        overlayEditText.setText("");
+                        // Have to do this, no other way
+                        editTextView.setVisibility(View.GONE);
+                    }
+                }
+        );
+
+        WindowManager.LayoutParams params2 = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                200,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                PixelFormat.TRANSPARENT);
+        params2.gravity = Gravity.BOTTOM;
+        params2.dimAmount = (float)0.2;
+        windowManager.addView(editTextView, params2);
+
+        editTextView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction())
+                {
+                    case MotionEvent.ACTION_OUTSIDE:
+                        Log.d(Utils.LogTag, "!!!Clearing focus!!!");
+                        editTextView.clearFocus();
+                        // Have to do this, no other way
+                        editTextView.setVisibility(View.GONE);
+
+                }
+                return true;
+            }
+        });
+
 
         overlayView.setOnTouchListener(new View.OnTouchListener() {
             long time_start = 0, time_end = 0;
@@ -143,13 +187,12 @@ public class OverlayService extends Service {
                     Log.d(Utils.LogTag, "Into runnable_longClick");
 
                     isLongclick = true;
-                    removeView.setVisibility(View.VISIBLE);
-                    chathead_longclick();
                 }
             };
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
                 WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) overlayView.getLayoutParams();
 
                 int x_cord = (int) event.getRawX();
@@ -162,8 +205,6 @@ public class OverlayService extends Service {
                         time_start = System.currentTimeMillis();
                         handler_longClick.postDelayed(runnable_longClick, 600);
 
-                        remove_img_width = removeImg.getLayoutParams().width;
-                        remove_img_height = removeImg.getLayoutParams().height;
 
                         x_init_cord = x_cord;
                         y_init_cord = y_cord;
@@ -171,10 +212,6 @@ public class OverlayService extends Service {
                         x_init_margin = layoutParams.x;
                         y_init_margin = layoutParams.y;
 
-                        if(txtView != null){
-                            txtView.setVisibility(View.GONE);
-                            myHandler.removeCallbacks(myRunnable);
-                        }
                         break;
                     case MotionEvent.ACTION_MOVE:
                         int x_diff_move = x_cord - x_init_cord;
@@ -183,101 +220,12 @@ public class OverlayService extends Service {
                         x_cord_Destination = x_init_margin + x_diff_move;
                         y_cord_Destination = y_init_margin + y_diff_move;
 
-                        if(isLongclick){
-                            Log.d(Utils.LogTag, "isLongclick");
-                            int x_bound_left = szWindow.x / 2 - (int)(remove_img_width * 1.5);
-                            int x_bound_right = szWindow.x / 2 +  (int)(remove_img_width * 1.5);
-                            int y_bound_top = szWindow.y - (int)(remove_img_height * 1.5);
-
-                            if((x_cord >= x_bound_left && x_cord <= x_bound_right) && y_cord >= y_bound_top){
-                                inBounded = true;
-
-                                int x_cord_remove = (int) ((szWindow.x - (remove_img_height * 1.5)) / 2);
-                                int y_cord_remove = (int) (szWindow.y - ((remove_img_width * 1.5) + getStatusBarHeight() ));
-
-                                if(removeImg.getLayoutParams().height == remove_img_height){
-                                    removeImg.getLayoutParams().height = (int) (remove_img_height * 1.5);
-                                    removeImg.getLayoutParams().width = (int) (remove_img_width * 1.5);
-
-                                    WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
-                                    param_remove.x = x_cord_remove;
-                                    param_remove.y = y_cord_remove;
-
-                                    windowManager.updateViewLayout(removeView, param_remove);
-                                }
-
-                                layoutParams.x = x_cord_remove + (Math.abs(removeView.getWidth() - overlayView.getWidth())) / 2;
-                                layoutParams.y = y_cord_remove + (Math.abs(removeView.getHeight() - overlayView.getHeight())) / 2 ;
-
-                                windowManager.updateViewLayout(overlayView, layoutParams);
-                                break;
-                            }else{
-                                inBounded = false;
-                                removeImg.getLayoutParams().height = remove_img_height;
-                                removeImg.getLayoutParams().width = remove_img_width;
-
-                                WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
-                                int x_cord_remove = (szWindow.x - removeView.getWidth()) / 2;
-                                int y_cord_remove = szWindow.y - (removeView.getHeight() + getStatusBarHeight() );
-
-                                param_remove.x = x_cord_remove;
-                                param_remove.y = y_cord_remove;
-
-                                windowManager.updateViewLayout(removeView, param_remove);
-                            }
-
-                        }
-
-
                         layoutParams.x = x_cord_Destination;
                         layoutParams.y = y_cord_Destination;
 
                         windowManager.updateViewLayout(overlayView, layoutParams);
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.d(Utils.LogTag, "ACTION_UP");
-                        isLongclick = false;
-                        Log.d(Utils.LogTag, "removeView.setVisibility(View.GONE)");
-                        removeView.setVisibility(View.GONE);
-                        removeImg.getLayoutParams().height = remove_img_height;
-                        removeImg.getLayoutParams().width = remove_img_width;
-                        Log.d(Utils.LogTag, "Remove call backs for runnable_longClick");
-                        handler_longClick.removeCallbacks(runnable_longClick);
-
-                        if(inBounded){
-                            if(Overlay.active){
-                                Overlay.overlayActivity.finish();
-                            }
-                            Log.d(Utils.LogTag, "Stop ChatHeadService");
-                            stopService(new Intent(OverlayService.this, OverlayService.class));
-                            inBounded = false;
-                            break;
-                        }
-
-
-                        int x_diff = x_cord - x_init_cord;
-                        int y_diff = y_cord - y_init_cord;
-
-                        if(Math.abs(x_diff) < 5 && Math.abs(y_diff) < 5){
-                            time_end = System.currentTimeMillis();
-                            if((time_end - time_start) < 300){
-                                chathead_click();
-                            }
-                        }
-
-                        y_cord_Destination = y_init_margin + y_diff;
-
-                        int BarHeight =  getStatusBarHeight();
-                        if (y_cord_Destination < 0) {
-                            y_cord_Destination = 0;
-                        } else if (y_cord_Destination + (overlayView.getHeight() + BarHeight) > szWindow.y) {
-                            y_cord_Destination = szWindow.y - (overlayView.getHeight() + BarHeight );
-                        }
-                        layoutParams.y = y_cord_Destination;
-
-                        inBounded = false;
-                        resetPosition(x_cord);
-
                         break;
                     default:
                         Log.d(Utils.LogTag, "chatheadView.setOnTouchListener  -> event.getAction() : default");
@@ -287,24 +235,8 @@ public class OverlayService extends Service {
             }
         });
 
-
-        txtView = (LinearLayout)inflater.inflate(R.layout.txt, null);
-        txt1 = (TextView) txtView.findViewById(R.id.txt1);
-        txt_linearlayout = (LinearLayout)txtView.findViewById(R.id.txt_linearlayout);
-
-
-        WindowManager.LayoutParams paramsTxt = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT);
-        paramsTxt.gravity = Gravity.TOP | Gravity.LEFT;
-
-        Log.d(Utils.LogTag, "txtView.setVisibility(View.GONE)");
-        txtView.setVisibility(View.GONE);
-        windowManager.addView(txtView, paramsTxt);
     }
+
 
 
     @Override
@@ -320,131 +252,7 @@ public class OverlayService extends Service {
             szWindow.set(w, h);
         }
 
-        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) overlayView.getLayoutParams();
-
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d(Utils.LogTag, "ChatHeadService.onConfigurationChanged -> landscap");
-
-            if(txtView != null){
-                txtView.setVisibility(View.GONE);
-            }
-
-            if(layoutParams.y + (overlayView.getHeight() + getStatusBarHeight()) > szWindow.y){
-                layoutParams.y = szWindow.y- (overlayView.getHeight() + getStatusBarHeight());
-                windowManager.updateViewLayout(overlayView, layoutParams);
-            }
-
-            if(layoutParams.x != 0 && layoutParams.x < szWindow.x){
-                resetPosition(szWindow.x);
-            }
-
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Log.d(Utils.LogTag, "ChatHeadService.onConfigurationChanged -> portrait");
-
-            if(txtView != null){
-                txtView.setVisibility(View.GONE);
-            }
-
-            if(layoutParams.x > szWindow.x){
-                resetPosition(szWindow.x);
-            }
-
-        }
-
     }
-
-    private void resetPosition(int x_cord_now) {
-        Log.d(Utils.LogTag, "resetPosition()");
-        if(x_cord_now <= szWindow.x / 2){
-            isLeft = true;
-            moveToLeft(x_cord_now);
-
-        } else {
-            isLeft = false;
-            moveToRight(x_cord_now);
-
-        }
-
-    }
-    private void moveToLeft(final int x_cord_now){
-        final int x = szWindow.x - x_cord_now;
-        Log.d(Utils.LogTag, "moveToLeft()");
-        new CountDownTimer(500, 5) {
-            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) overlayView.getLayoutParams();
-            public void onTick(long t) {
-                long step = (500 - t)/5;
-                mParams.x = 0 - (int)(double)bounceValue(step, x );
-                windowManager.updateViewLayout(overlayView, mParams);
-            }
-            public void onFinish() {
-                mParams.x = 0;
-                windowManager.updateViewLayout(overlayView, mParams);
-            }
-        }.start();
-    }
-    private  void moveToRight(final int x_cord_now){
-        Log.d(Utils.LogTag, "moveToRight()");
-        new CountDownTimer(500, 5) {
-            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) overlayView.getLayoutParams();
-            public void onTick(long t) {
-                long step = (500 - t)/5;
-                mParams.x = szWindow.x + (int)(double)bounceValue(step, x_cord_now) - overlayView.getWidth();
-                windowManager.updateViewLayout(overlayView, mParams);
-            }
-            public void onFinish() {
-                mParams.x = szWindow.x - overlayView.getWidth();
-                windowManager.updateViewLayout(overlayView, mParams);
-            }
-        }.start();
-    }
-
-    private double bounceValue(long step, long scale){
-        double value = scale * Math.exp(-0.055 * step) * Math.cos(0.08 * step);
-        return value;
-    }
-
-    private int getStatusBarHeight() {
-        int statusBarHeight = (int) Math.ceil(25 * getApplicationContext().getResources().getDisplayMetrics().density);
-        return statusBarHeight;
-    }
-
-    private void chathead_click(){
-        Log.d(Utils.LogTag, "chathead_click()");
-        //if(overlay.active){
-            //Log.d(Utils.LogTag, "myDialog.finish()");
-            //overlay.overlayActivity.finish();
-        //}else{
-            Log.d(Utils.LogTag, "Open myDialog");
-            //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            //startActivity(it);
-            //startService(new Intent(this, OverlayService.class));
-        //}
-    }
-
-    private void chathead_longclick(){
-        Log.d(Utils.LogTag, "Into ChatHeadService.chathead_longclick() ");
-
-        WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
-        int x_cord_remove = (szWindow.x - removeView.getWidth()) / 2;
-        int y_cord_remove = szWindow.y - (removeView.getHeight() + getStatusBarHeight() );
-
-        param_remove.x = x_cord_remove;
-        param_remove.y = y_cord_remove;
-
-        windowManager.updateViewLayout(removeView, param_remove);
-    }
-
-    Handler myHandler = new Handler();
-    Runnable myRunnable = new Runnable() {
-
-        @Override
-        public void run() {
-            // TODO Auto-generated method stub
-            if(txtView != null){
-                txtView.setVisibility(View.GONE);
-            }
-        }
-    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -492,14 +300,6 @@ public class OverlayService extends Service {
             windowManager.removeView(overlayView);
         }
 
-        if(txtView != null){
-            windowManager.removeView(txtView);
-        }
-
-        if(removeView != null){
-            windowManager.removeView(removeView);
-        }
-
     }
 
 
@@ -509,6 +309,33 @@ public class OverlayService extends Service {
         Log.d(Utils.LogTag, "ChatHeadService.onBind()");
         return null;
     }
+
+    static final int MSG_UPDATE_RECYCLER_VIEW = 1;
+    static final int MSG_ENCRYPTION_READY = 2;
+
+    /**
+     * Handler of incoming messages from clients.
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_UPDATE_RECYCLER_VIEW:
+
+                    break;
+                case MSG_ENCRYPTION_READY:
+
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
 
 
 }

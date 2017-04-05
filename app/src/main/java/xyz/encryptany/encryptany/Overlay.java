@@ -42,7 +42,7 @@ public class Overlay extends Activity {
         mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new OverlayRecyclerViewAdapter(GenDummyData());
+        mAdapter = new OverlayRecyclerViewAdapter();
         recyclerView.setAdapter(mAdapter);
 
         overlayActivity = Overlay.this;

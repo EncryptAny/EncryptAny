@@ -3,12 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/overlay"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:background="@color/white"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
+    android:background="@color/gray"
+    android:paddingBottom="2dp"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp"
+    android:paddingTop="24dp"
     tools:context="xyz.encryptany.encryptany.Overlay">
 
+
+    <Button
+        android:id="@+id/overlayEditTextShow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Encrypt a Message"
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

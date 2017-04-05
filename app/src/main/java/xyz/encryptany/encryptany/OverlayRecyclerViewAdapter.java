@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 
 /**
@@ -17,10 +20,13 @@ import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 
 
 public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecyclerViewAdapter.ViewHolder> {
-    private EncryptedMessage[] mMsgs;
+    private ArrayList<EncryptedMessage> mMsgs;
 
-    public OverlayRecyclerViewAdapter(EncryptedMessage[] enc_msg) {
+    public OverlayRecyclerViewAdapter(ArrayList<EncryptedMessage> enc_msg) {
         this.mMsgs = enc_msg;
+    }
+    public OverlayRecyclerViewAdapter() {
+        this.mMsgs = new ArrayList<EncryptedMessage>();
     }
 
     @Override
@@ -32,14 +38,24 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
 
     @Override
     public void onBindViewHolder(OverlayRecyclerViewAdapter.ViewHolder holder, int position) {
-        holder.tvMsgSender.setText(mMsgs[position].getAuthor());
-        holder.tvMsgTimestamp.setText(Long.toString(mMsgs[position].getDate()));
-        holder.tvMsgContent.setText(mMsgs[position].getMessage());
+        holder.tvMsgSender.setText(mMsgs.get(position).getAuthor());
+        holder.tvMsgTimestamp.setText(Long.toString(mMsgs.get(position).getDate()));
+        holder.tvMsgContent.setText(mMsgs.get(position).getMessage());
     }
 
     @Override
     public int getItemCount() {
-        return  mMsgs.length;
+        return  mMsgs.size();
+    }
+
+    public void addMessage(EncryptedMessage enc_msg) {
+        mMsgs.add(enc_msg);
+        super.notifyItemInserted(mMsgs.size() - 1);
+    }
+
+    public void updateMessages(ArrayList<EncryptedMessage> enc_msg) {
+        this.mMsgs = enc_msg;
+        super.notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -59,4 +75,5 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
             return super.toString();
         }
     }
+
 }
