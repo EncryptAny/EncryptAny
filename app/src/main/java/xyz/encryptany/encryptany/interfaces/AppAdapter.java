@@ -1,6 +1,6 @@
 package xyz.encryptany.encryptany.interfaces;
 
-import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
+import xyz.encryptany.encryptany.listeners.AppListener;
 
 /**
  * Created by dakfu on 1/26/2017.
@@ -8,7 +8,6 @@ import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
 
 
 public interface AppAdapter {
-    public boolean sendMessage(String message);
-    public void setMessageUpdatedListener(MessagesUpdatedListener listener);
-    public boolean inputMessage(Message message);
+    boolean sendMessage(Message message);
+    void setMessageUpdatedListener(AppListener listener);
 }

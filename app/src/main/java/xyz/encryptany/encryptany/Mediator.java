@@ -9,15 +9,14 @@ import xyz.encryptany.encryptany.interfaces.Encryptor;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.UIAdapter;
 import xyz.encryptany.encryptany.listeners.EncryptionListener;
-import xyz.encryptany.encryptany.listeners.MessageSentListener;
-import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
+import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.listeners.UIListener;
 
 /**
  * Created by dakfu on 1/26/2017.
  */
 
-public class Mediator implements MessagesUpdatedListener, EncryptionListener,UIListener {
+public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     AppAdapter appAdapter;
     UIAdapter uiAdapter;
@@ -37,6 +36,9 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener,UIL
 
         conversationReady =false;
         this.encryptionAdapter.setEncryptionListener(this);
+        appAdapter.setMessageUpdatedListener(this);
+        uiAdapter.setUIListener(this);
+        encryptionAdapter.setEncryptionListener(this);
     }
 
     @Override
@@ -52,10 +54,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener,UIL
     public Cursor getOldMessages(String app){
         return archiverAdapter.retrieveAppMessages(app);
     }
-//    @Override
-//    public void sendingMessage() {
-//
-//    }
+
     public void sendMessageFromUIAdapter(String messageString,String otherParticipant, String appSource){
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
@@ -105,7 +104,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener,UIL
     private boolean sendMessageToApp(Message message){
         //send the message package to the app adapter to deal with
         //also call displaySentMessage I guess?
-        appAdapter.inputMessage(message);
+        appAdapter.sendMessage(message);
         return false;
     }
 

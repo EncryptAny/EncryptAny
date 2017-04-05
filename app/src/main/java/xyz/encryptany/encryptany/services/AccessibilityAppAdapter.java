@@ -13,13 +13,14 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import xyz.encryptany.encryptany.concrete.JSONMessageCodecStrategy;
-import xyz.encryptany.encryptany.listeners.MessagesUpdatedListener;
+import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter {
 
     private static final boolean ENABLE_AUTOFILL = true;
+    private AppListener appListener = null;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -82,18 +83,14 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     }
 
     @Override
-    public boolean sendMessage(String message) {
+    public boolean sendMessage(Message message) {
 
         return false;
     }
 
     @Override
-    public void setMessageUpdatedListener(MessagesUpdatedListener listener) {
-
+    public void setMessageUpdatedListener(AppListener listener) {
+        this.appListener = listener;
     }
 
-    @Override
-    public boolean inputMessage(Message message) {
-        return false;
-    }
 }

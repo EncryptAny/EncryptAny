@@ -1,6 +1,6 @@
 package xyz.encryptany.encryptany.interfaces;
 
-import xyz.encryptany.encryptany.listeners.MessageSentListener;
+import xyz.encryptany.encryptany.listeners.UIListener;
 
 /**
  * Created by dakfu on 1/26/2017.
@@ -8,6 +8,6 @@ import xyz.encryptany.encryptany.listeners.MessageSentListener;
 
 public interface UIAdapter {
 
-    void setMessageSentListener(MessageSentListener msl);
+    void setUIListener(UIListener uiListener);
     void setMessages(Message[] msg);
 }

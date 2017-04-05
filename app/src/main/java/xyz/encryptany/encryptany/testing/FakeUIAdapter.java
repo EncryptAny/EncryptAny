@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.UIAdapter;
-import xyz.encryptany.encryptany.listeners.MessageSentListener;
+import xyz.encryptany.encryptany.listeners.UIListener;
 
 /**
  * Created by Max on 1/31/2017.
@@ -18,12 +18,10 @@ import xyz.encryptany.encryptany.listeners.MessageSentListener;
 
 public class FakeUIAdapter implements UIAdapter {
     private static final int DELAY_SECS = 5;
-    private MessageSentListener msl = null;
+    private UIListener uiListener = null;
     Message[] msgs = null;
 
-    private final Message dummyMsg = new EncryptedMessage("this is encrpted txt", "maxwell", "4ab", (new Date()).getTime());
-
-    public static void fakeDelay() {
+    private static void fakeDelay() {
         try {
             for (int i=0; i!=DELAY_SECS; ++i) {
                 Log.d("MAXWELL", "" + (DELAY_SECS-i) + " Seconds Left Until Interaction");
@@ -39,10 +37,10 @@ public class FakeUIAdapter implements UIAdapter {
     }
 
     @Override
-    public void setMessageSentListener(MessageSentListener msl) {
-        this.msl = msl;
+    public void setUIListener(UIListener uiListener) {
+        this.uiListener = uiListener;
         fakeDelay();
-        msl.sendMessage(dummyMsg);
+        //uiListener.sendMessageFromUIAdapter("bob is da bomb", "cory", "com.yourmom.isbig");
     }
 
     @Override

@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             if(Utils.canDrawOverlays(MainActivity.this)) {
                 // Add debug code to run here
                 // BEGIN MAXWELL DEBUG
-                fui.fakeDelay();
+                //fui.fakeDelay();
                 // END MAXWELL DEBUG
                 startChatHead();
             } else {
