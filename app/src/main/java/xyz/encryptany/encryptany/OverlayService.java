@@ -57,17 +57,6 @@ public class OverlayService extends Service {
 
     }
 
-    private EncryptedMessage[] GenDummyData()
-    {
-        final int dummyAmount = 20;
-        EncryptedMessage[] dummydata = new EncryptedMessage[dummyAmount];
-        for (int i = 1; i != dummyAmount+1; ++i)
-        {
-            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date());
-        }
-        return dummydata;
-    }
-
     private void handleStart(){
         Log.d(Utils.LogTag,"handleStart()");
 
@@ -298,6 +287,9 @@ public class OverlayService extends Service {
 
         if(overlayView != null){
             windowManager.removeView(overlayView);
+        }
+        if(editTextView != null){
+            windowManager.removeView(editTextView);
         }
 
     }

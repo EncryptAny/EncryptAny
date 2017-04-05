@@ -26,7 +26,7 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
         this.mMsgs = enc_msg;
     }
     public OverlayRecyclerViewAdapter() {
-        this.mMsgs = new ArrayList<EncryptedMessage>();
+        this.mMsgs = new ArrayList<>();
     }
 
     @Override
