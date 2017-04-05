@@ -26,10 +26,9 @@ public class OTREncryptor implements Encryptor {
     //Listener for the mediator to send out the strings from the encryptor. (Kind of like a visitor but not really :()
     EncryptionListener encryptionListener;
 
-    public OTREncryptor(EncryptionListener encryptionListener){
-        this.encryptionListener = encryptionListener;
-        //The local callback is implemented within this file
-        callback = new LocalCallback(encryptionListener);
+    public OTREncryptor(){
+
+
         //The JCA provider is just the particular setting this version of OTR uses as suggested in the README and Example program
         conversation = new UserState(new ca.uwaterloo.crysp.otr.crypt.jca.JCAProvider());
     }
@@ -112,8 +111,16 @@ public class OTREncryptor implements Encryptor {
 
     @Override
     public void setKeys() {
-
+        //otr sets the keys, not overriding interface here
     }
+
+    @Override
+    public void setEncryptionListener(EncryptionListener listener) {
+        this.encryptionListener = listener;
+        //The local callback is implemented within this file
+        callback = new LocalCallback(encryptionListener);
+    }
+
 }
 class LocalCallback implements OTRCallbacks{
 
