@@ -40,7 +40,7 @@ public class FakeUIAdapter implements UIAdapter {
     public void setUIListener(UIListener uiListener) {
         this.uiListener = uiListener;
         fakeDelay();
-        //uiListener.sendMessageFromUIAdapter("bob is da bomb", "cory", "com.yourmom.isbig");
+        uiListener.sendMessageFromUIAdapter("bob is da bomb", "cory", "com.yourmom.isbig");
     }
 
     @Override
