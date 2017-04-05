@@ -50,7 +50,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     public void getMessages() {
 
     }
-
+    
+    @Override
     public Cursor getOldMessages(String app){
         return archiverAdapter.retrieveAppMessages(app);
     }
@@ -63,6 +64,11 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         encryptMessage(payload);
         archiveMessage(payload);
 
+    }
+
+    @Override
+    public void startEncryptionProcess(String otherParticipant, String app) {
+        encryptionAdapter.initialization(messageFactory.createNewMessage("Let's take this somewhere private",otherParticipant,app));
     }
 
     private boolean encryptMessage(Message message){
@@ -120,6 +126,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     public void conversationReady() {
         //UI update to allow conversation to begin
         conversationReady = true;
+
     }
     @Override
     public void messageDecrypted(String result,String otherParticipant, String appSource){
