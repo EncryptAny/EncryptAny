@@ -36,7 +36,7 @@ public class Mediator implements MessagesUpdatedListener, EncryptionListener,UIL
         messageFactory = new MessageFactory();
 
         conversationReady =false;
-
+        this.encryptionAdapter.setEncryptionListener(this);
     }
 
     @Override
