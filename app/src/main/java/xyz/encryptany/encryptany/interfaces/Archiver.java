@@ -1,5 +1,7 @@
 package xyz.encryptany.encryptany.interfaces;
 
+import net.sqlcipher.Cursor;
+
 import java.util.Iterator;
 
 /**
@@ -8,5 +10,6 @@ import java.util.Iterator;
 
 public interface Archiver {
     public void archiveMessage(Message message);
+    public Cursor retrieveAppMessages(String app);
 
 }
