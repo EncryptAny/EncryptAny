@@ -10,23 +10,10 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="xyz.encryptany.encryptany.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
-    <Button android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Show Message"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/btnMsg" />
-
     <Button android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:id="@+id/btnStartService"
-        android:layout_above="@id/btnMsg"
-        android:layout_centerHorizontal="true"
-        android:text="Start Service"/>
+        android:text="Start Service"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

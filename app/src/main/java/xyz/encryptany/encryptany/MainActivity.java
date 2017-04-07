@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import xyz.encryptany.encryptany.services.UIService;
 import xyz.encryptany.encryptany.testing.FakeUIAdapter;
@@ -16,6 +17,8 @@ import xyz.encryptany.encryptany.testing.NoOpArchiver;
 import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String START_SERVICE_TOAST = "Please scroll down and enable \"EncryptAny\" under \"Services\"";
 
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD = 1234;
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD_MSG = 5678;
@@ -27,10 +30,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btnStartService = (Button)findViewById(R.id.btnStartService);
-        btnShowMsg = (Button)findViewById(R.id.btnMsg);
 
         btnStartService.setOnClickListener(lst_StartService);
-        btnShowMsg.setOnClickListener(lst_ShowMsg);
     }
 
     Button.OnClickListener lst_StartService = new Button.OnClickListener(){
@@ -38,27 +39,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if(Utils.canDrawOverlays(MainActivity.this)) {
-                startChatHead();
+                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                Toast.makeText(MainActivity.this, START_SERVICE_TOAST,
+                        Toast.LENGTH_LONG).show();
+                startActivity(intent);
             } else {
                 requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD);
             }
         }
     };
 
-    Button.OnClickListener lst_ShowMsg = new Button.OnClickListener(){
-        @Override
-        public void onClick(View v) {
-            if(Utils.canDrawOverlays(MainActivity.this))
-                showChatHeadMsg();
-            else{
-                requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD_MSG);
-            }
-        }
-    };
-
-    private void startChatHead(){
-        startService(new Intent(MainActivity.this, UIService.class));
-    }
     private void showChatHeadMsg(){
         Intent it = new Intent(MainActivity.this, UIService.class);
         startService(it);
