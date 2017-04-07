@@ -9,8 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import xyz.encryptany.encryptany.services.ChatHeadService;
 import xyz.encryptany.encryptany.testing.FakeUIAdapter;
-import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.services.AccessibilityAppAdapter;
 import xyz.encryptany.encryptany.testing.NoOpArchiver;
 import xyz.encryptany.encryptany.testing.NoOpEncryptor;
