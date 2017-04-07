@@ -20,12 +20,6 @@ public class MainActivity extends AppCompatActivity {
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD = 1234;
     public static int OVERLAY_PERMISSION_REQ_CODE_CHATHEAD_MSG = 5678;
     public Button btnStartService, btnShowMsg;
-    private Mediator m = null;
-
-    // MAXWELL DEBUG
-    FakeUIAdapter fui = new FakeUIAdapter();
-    // END MAXWELL DEBUG
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,58 +31,36 @@ public class MainActivity extends AppCompatActivity {
 
         btnStartService.setOnClickListener(lst_StartService);
         btnShowMsg.setOnClickListener(lst_ShowMsg);
-
-        m = new Mediator(new AccessibilityAppAdapter(), fui, new NoOpEncryptor(), new NoOpArchiver());
-        Log.d("MAXWELL", "Activity started");
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("MAXWELL", "Activity Paused");
     }
 
     Button.OnClickListener lst_StartService = new Button.OnClickListener(){
 
         @Override
         public void onClick(View v) {
-            // TODO Auto-generated method stub
-            Log.d(Utils.LogTag, "lst_StartService -> Utils.canDrawOverlays(Main.this): " + Utils.canDrawOverlays(MainActivity.this));
-
             if(Utils.canDrawOverlays(MainActivity.this)) {
                 startChatHead();
             } else {
                 requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD);
             }
         }
-
     };
 
     Button.OnClickListener lst_ShowMsg = new Button.OnClickListener(){
-
         @Override
         public void onClick(View v) {
-            // TODO Auto-generated method stub
             if(Utils.canDrawOverlays(MainActivity.this))
                 showChatHeadMsg();
             else{
                 requestPermission(OVERLAY_PERMISSION_REQ_CODE_CHATHEAD_MSG);
             }
-
         }
-
     };
 
     private void startChatHead(){
         startService(new Intent(MainActivity.this, UIService.class));
     }
     private void showChatHeadMsg(){
-        java.util.Date now = new java.util.Date();
-        String str = "test by henry  " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now);
-
         Intent it = new Intent(MainActivity.this, UIService.class);
-        it.putExtra(Utils.EXTRA_MSG, str);
         startService(it);
     }
 

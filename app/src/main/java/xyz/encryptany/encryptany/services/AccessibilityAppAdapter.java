@@ -17,10 +17,14 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import xyz.encryptany.encryptany.Mediator;
 import xyz.encryptany.encryptany.concrete.JSONMessageCodecStrategy;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
+import xyz.encryptany.encryptany.testing.FakeUIAdapter;
+import xyz.encryptany.encryptany.testing.NoOpArchiver;
+import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter, SubserviceListener {
 
@@ -42,8 +46,10 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         super.onDestroy();
     }
 
+    // This is where we want to put all of our initalization code
     @Override
     protected void onServiceConnected() {
+        Mediator m = new Mediator(new AccessibilityAppAdapter(), new FakeUIAdapter(), new NoOpEncryptor(), new NoOpArchiver());
         super.onServiceConnected();
         uiService.start();
     }

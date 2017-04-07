@@ -7,12 +7,9 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -25,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import xyz.encryptany.encryptany.Overlay;
 import xyz.encryptany.encryptany.OverlayRecyclerViewAdapter;
 import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
@@ -72,7 +68,6 @@ public class UIService extends Subservice {
 
         overlayView.addView(recyclerView);
 
-        Log.d(Utils.LogTag, "Inflate removeView");
         removeView = (RelativeLayout)inflater.inflate(R.layout.remove, null);
         WindowManager.LayoutParams paramRemove = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -82,10 +77,9 @@ public class UIService extends Subservice {
                 PixelFormat.TRANSLUCENT);
         paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
 
-        Log.d(Utils.LogTag, "removeView.setVisibility(View.GONE)");
         removeView.setVisibility(View.GONE);
         removeImg = (ImageView)removeView.findViewById(R.id.remove_img);
-        Log.d(Utils.LogTag, "addView removeView");
+
         windowManager.addView(removeView, paramRemove);
 
 
@@ -110,7 +104,6 @@ public class UIService extends Subservice {
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
         params.y = 100;
-        Log.d(Utils.LogTag, "Add chatheadView");
         windowManager.addView(chatheadView, params);
 
         chatheadView.setOnTouchListener(new View.OnTouchListener() {
@@ -123,8 +116,6 @@ public class UIService extends Subservice {
 
                 @Override
                 public void run() {
-                    Log.d(Utils.LogTag, "Into runnable_longClick");
-
                     isLongclick = true;
                     removeView.setVisibility(View.VISIBLE);
                     chathead_longclick();
@@ -141,7 +132,6 @@ public class UIService extends Subservice {
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.d(Utils.LogTag, "ACTION_DOWN");
                         time_start = System.currentTimeMillis();
                         handler_longClick.postDelayed(runnable_longClick, 600);
 
@@ -167,7 +157,6 @@ public class UIService extends Subservice {
                         y_cord_Destination = y_init_margin + y_diff_move;
 
                         if(isLongclick){
-                            Log.d(Utils.LogTag, "isLongclick");
                             int x_bound_left = szWindow.x / 2 - (int)(remove_img_width * 1.5);
                             int x_bound_right = szWindow.x / 2 +  (int)(remove_img_width * 1.5);
                             int y_bound_top = szWindow.y - (int)(remove_img_height * 1.5);
@@ -218,17 +207,13 @@ public class UIService extends Subservice {
                         windowManager.updateViewLayout(chatheadView, layoutParams);
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.d(Utils.LogTag, "ACTION_UP");
                         isLongclick = false;
-                        Log.d(Utils.LogTag, "removeView.setVisibility(View.GONE)");
                         removeView.setVisibility(View.GONE);
                         removeImg.getLayoutParams().height = remove_img_height;
                         removeImg.getLayoutParams().width = remove_img_width;
-                        Log.d(Utils.LogTag, "Remove call backs for runnable_longClick");
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
-                            Log.d(Utils.LogTag, "Stop UIService");
                             chatheadView.setVisibility(View.GONE);
                             inBounded = false;
                             break;
@@ -259,7 +244,6 @@ public class UIService extends Subservice {
 
                         break;
                     default:
-                        Log.d(Utils.LogTag, "chatheadView.setOnTouchListener  -> event.getAction() : default");
                         break;
                 }
                 return true;
@@ -280,7 +264,6 @@ public class UIService extends Subservice {
                 PixelFormat.TRANSLUCENT);
         paramsTxt.gravity = Gravity.TOP | Gravity.LEFT;
 
-        Log.d(Utils.LogTag, "txtView.setVisibility(View.GONE)");
         txtView.setVisibility(View.GONE);
         windowManager.addView(txtView, paramsTxt);
 
@@ -292,7 +275,6 @@ public class UIService extends Subservice {
                 PixelFormat.TRANSLUCENT);
         params_overlayView.x = 0;
         params_overlayView.y = 100;
-        Log.d(Utils.LogTag, "Add chatheadView");
         windowManager.addView(overlayView, params_overlayView);
         overlayView.setVisibility(View.GONE);
 
@@ -364,8 +346,6 @@ public class UIService extends Subservice {
 
                 @Override
                 public void run() {
-                    Log.d(Utils.LogTag, "Into runnable_longClick");
-
                     isLongclick = true;
                 }
             };
@@ -381,7 +361,6 @@ public class UIService extends Subservice {
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.d(Utils.LogTag, "ACTION_DOWN");
                         time_start = System.currentTimeMillis();
                         handler_longClick.postDelayed(runnable_longClick, 600);
 
@@ -408,7 +387,6 @@ public class UIService extends Subservice {
                     case MotionEvent.ACTION_UP:
                         break;
                     default:
-                        Log.d(Utils.LogTag, "chatheadView.setOnTouchListener  -> event.getAction() : default");
                         break;
                 }
                 return true;
@@ -479,7 +457,6 @@ public class UIService extends Subservice {
 
     private void showMsg(String sMsg){
         if(txtView != null && chatheadView != null ){
-            Log.d(Utils.LogTag, "UIService.showMsg -> sMsg=" + sMsg);
             txt1.setText(sMsg);
             myHandler.removeCallbacks(myRunnable);
 
@@ -500,8 +477,6 @@ public class UIService extends Subservice {
 
                 txt_linearlayout.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
             }
-
-            Log.d(Utils.LogTag, "txtView.setVisibility(View.VISIBLE)");
             txtView.setVisibility(View.VISIBLE);
             windowManager.updateViewLayout(txtView, param_txt);
 
