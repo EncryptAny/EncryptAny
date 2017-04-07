@@ -10,24 +10,31 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import xyz.encryptany.encryptany.Overlay;
+import xyz.encryptany.encryptany.OverlayRecyclerViewAdapter;
 import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
 
-public class ChatHeadService extends Service {
+public class UIService extends Service {
     private WindowManager windowManager;
-    private RelativeLayout chatheadView, removeView;
+    private RelativeLayout chatheadView, removeView, overlayView, editTextView;
+    private EditText overlayEditText;
+    private Button overlayEditTextSend, overlayShowEditText;
     private LinearLayout txtView, txt_linearlayout;
     private ImageView chatheadImg, removeImg;
     private TextView  txt1;
@@ -36,6 +43,9 @@ public class ChatHeadService extends Service {
     private boolean isLeft = true;
     private boolean serviceRunning = false;
     private String sMsg = "";
+    private RecyclerView recyclerView;
+    private OverlayRecyclerViewAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @SuppressWarnings("deprecation")
 
@@ -43,7 +53,7 @@ public class ChatHeadService extends Service {
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
-        Log.d(Utils.LogTag, "ChatHeadService.onCreate()");
+        Log.d(Utils.LogTag, "UIService.onCreate()");
 
     }
 
@@ -52,6 +62,22 @@ public class ChatHeadService extends Service {
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        overlayView = (RelativeLayout) inflater.inflate(R.layout.overlay, null);
+        recyclerView = (RecyclerView) inflater.inflate(R.layout.overlay_recycler_view, null);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        mLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLayoutManager);
+
+        mAdapter = new OverlayRecyclerViewAdapter();
+        recyclerView.setAdapter(mAdapter);
+
+        overlayView.addView(recyclerView);
 
         Log.d(Utils.LogTag, "Inflate removeView");
         removeView = (RelativeLayout)inflater.inflate(R.layout.remove, null);
@@ -210,11 +236,8 @@ public class ChatHeadService extends Service {
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
-                            if(Overlay.active){
-                                Overlay.overlayActivity.finish();
-                            }
-                            Log.d(Utils.LogTag, "Stop ChatHeadService");
-                            stopService(new Intent(ChatHeadService.this, ChatHeadService.class));
+                            Log.d(Utils.LogTag, "Stop UIService");
+                            chatheadView.setVisibility(View.GONE);
                             inBounded = false;
                             break;
                         }
@@ -241,7 +264,6 @@ public class ChatHeadService extends Service {
                         layoutParams.y = y_cord_Destination;
 
                         inBounded = false;
-                        resetPosition(x_cord);
 
                         break;
                     default:
@@ -269,7 +291,142 @@ public class ChatHeadService extends Service {
         Log.d(Utils.LogTag, "txtView.setVisibility(View.GONE)");
         txtView.setVisibility(View.GONE);
         windowManager.addView(txtView, paramsTxt);
+
+        WindowManager.LayoutParams params_overlayView = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                600,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        params_overlayView.x = 0;
+        params_overlayView.y = 100;
+        Log.d(Utils.LogTag, "Add chatheadView");
+        windowManager.addView(overlayView, params_overlayView);
+        overlayView.setVisibility(View.GONE);
+
+        overlayShowEditText = (Button)overlayView.findViewById(R.id.overlayEditTextShow);
+        overlayShowEditText.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        editTextView.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
+
+        // WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        // Combined with
+        // WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        // Makes the edit text always receive text
+        editTextView = (RelativeLayout)inflater.inflate(R.layout.overlay_edit_text, null);
+        overlayEditText = (EditText) editTextView.findViewById(R.id.editText);
+        editTextView.setVisibility(View.GONE);
+        overlayEditTextSend = (Button)editTextView.findViewById(R.id.overlayTextSend);
+        overlayEditTextSend.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Grab text first
+                        editTextView.clearFocus();
+                        overlayEditText.setText("");
+                        // Have to do this, no other way
+                        editTextView.setVisibility(View.GONE);
+                    }
+                }
+        );
+
+        WindowManager.LayoutParams params_editTextView = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                200,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                PixelFormat.TRANSPARENT);
+        params_editTextView.gravity = Gravity.BOTTOM;
+        params_editTextView.dimAmount = (float)0.2;
+        windowManager.addView(editTextView, params_editTextView);
+
+        editTextView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction())
+                {
+                    case MotionEvent.ACTION_OUTSIDE:
+                        editTextView.clearFocus();
+                        // Have to do this, no other way
+                        editTextView.setVisibility(View.GONE);
+
+                }
+                return true;
+            }
+        });
+
+
+        overlayView.setOnTouchListener(new View.OnTouchListener() {
+            long time_start = 0;
+            boolean isLongclick = false;
+
+            Handler handler_longClick = new Handler();
+            Runnable runnable_longClick = new Runnable() {
+
+                @Override
+                public void run() {
+                    // TODO Auto-generated method stub
+                    Log.d(Utils.LogTag, "Into runnable_longClick");
+
+                    isLongclick = true;
+                }
+            };
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) overlayView.getLayoutParams();
+
+                int x_cord = (int) event.getRawX();
+                int y_cord = (int) event.getRawY();
+                int x_cord_Destination, y_cord_Destination;
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        Log.d(Utils.LogTag, "ACTION_DOWN");
+                        time_start = System.currentTimeMillis();
+                        handler_longClick.postDelayed(runnable_longClick, 600);
+
+
+                        x_init_cord = x_cord;
+                        y_init_cord = y_cord;
+
+                        x_init_margin = layoutParams.x;
+                        y_init_margin = layoutParams.y;
+
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        int x_diff_move = x_cord - x_init_cord;
+                        int y_diff_move = y_cord - y_init_cord;
+
+                        x_cord_Destination = x_init_margin + x_diff_move;
+                        y_cord_Destination = y_init_margin + y_diff_move;
+
+                        layoutParams.x = x_cord_Destination;
+                        layoutParams.y = y_cord_Destination;
+
+                        windowManager.updateViewLayout(overlayView, layoutParams);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        break;
+                    default:
+                        Log.d(Utils.LogTag, "chatheadView.setOnTouchListener  -> event.getAction() : default");
+                        break;
+                }
+                return true;
+            }
+        });
+
     }
+
+
 
 
     @Override
@@ -288,7 +445,7 @@ public class ChatHeadService extends Service {
         WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) chatheadView.getLayoutParams();
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d(Utils.LogTag, "ChatHeadService.onConfigurationChanged -> landscap");
+            Log.d(Utils.LogTag, "UIService.onConfigurationChanged -> landscap");
 
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
@@ -299,73 +456,15 @@ public class ChatHeadService extends Service {
                 windowManager.updateViewLayout(chatheadView, layoutParams);
             }
 
-            if(layoutParams.x != 0 && layoutParams.x < szWindow.x){
-                resetPosition(szWindow.x);
-            }
-
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Log.d(Utils.LogTag, "ChatHeadService.onConfigurationChanged -> portrait");
+            Log.d(Utils.LogTag, "UIService.onConfigurationChanged -> portrait");
 
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
             }
 
-            if(layoutParams.x > szWindow.x){
-                resetPosition(szWindow.x);
-            }
-
         }
 
-    }
-
-    private void resetPosition(int x_cord_now) {
-        Log.d(Utils.LogTag, "resetPosition()");
-        if(x_cord_now <= szWindow.x / 2){
-            isLeft = true;
-            //moveToLeft(x_cord_now);
-
-        } else {
-            isLeft = false;
-            //moveToRight(x_cord_now);
-
-        }
-
-    }
-    private void moveToLeft(final int x_cord_now){
-        final int x = szWindow.x - x_cord_now;
-        Log.d(Utils.LogTag, "moveToLeft()");
-        new CountDownTimer(500, 5) {
-            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) chatheadView.getLayoutParams();
-            public void onTick(long t) {
-                long step = (500 - t)/5;
-                mParams.x = 0 - (int)(double)bounceValue(step, x );
-                windowManager.updateViewLayout(chatheadView, mParams);
-            }
-            public void onFinish() {
-                mParams.x = 0;
-                windowManager.updateViewLayout(chatheadView, mParams);
-            }
-        }.start();
-    }
-    private  void moveToRight(final int x_cord_now){
-        Log.d(Utils.LogTag, "moveToRight()");
-        new CountDownTimer(500, 5) {
-            WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) chatheadView.getLayoutParams();
-            public void onTick(long t) {
-                long step = (500 - t)/5;
-                mParams.x = szWindow.x + (int)(double)bounceValue(step, x_cord_now) - chatheadView.getWidth();
-                windowManager.updateViewLayout(chatheadView, mParams);
-            }
-            public void onFinish() {
-                mParams.x = szWindow.x - chatheadView.getWidth();
-                windowManager.updateViewLayout(chatheadView, mParams);
-            }
-        }.start();
-    }
-
-    private double bounceValue(long step, long scale){
-        double value = scale * java.lang.Math.exp(-0.055 * step) * java.lang.Math.cos(0.08 * step);
-        return value;
     }
 
     private int getStatusBarHeight() {
@@ -376,20 +475,18 @@ public class ChatHeadService extends Service {
     private void chathead_click(){
         Log.d(Utils.LogTag, "chathead_click()");
         if(serviceRunning){
-            stopService(new Intent(this, OverlayService.class));
+            overlayView.setVisibility(View.GONE);
             serviceRunning = false;
         }else{
             Log.d(Utils.LogTag, "Starting overlay service");
-            //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            //startActivity(it);
-            startService(new Intent(this, OverlayService.class));
+            overlayView.setVisibility(View.VISIBLE);
             serviceRunning = true;
         }
 
     }
 
     private void chathead_longclick(){
-        Log.d(Utils.LogTag, "Into ChatHeadService.chathead_longclick() ");
+        Log.d(Utils.LogTag, "Into UIService.chathead_longclick() ");
 
         WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
         int x_cord_remove = (szWindow.x - removeView.getWidth()) / 2;
@@ -403,7 +500,7 @@ public class ChatHeadService extends Service {
 
     private void showMsg(String sMsg){
         if(txtView != null && chatheadView != null ){
-            Log.d(Utils.LogTag, "ChatHeadService.showMsg -> sMsg=" + sMsg);
+            Log.d(Utils.LogTag, "UIService.showMsg -> sMsg=" + sMsg);
             txt1.setText(sMsg);
             myHandler.removeCallbacks(myRunnable);
 
@@ -450,7 +547,7 @@ public class ChatHeadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // TODO Auto-generated method stub
-        Log.d(Utils.LogTag, "ChatHeadService.onStartCommand() -> startId=" + startId);
+        Log.d(Utils.LogTag, "UIService.onStartCommand() -> startId=" + startId);
 
         if(intent != null){
             Bundle bd = intent.getExtras();
@@ -509,7 +606,7 @@ public class ChatHeadService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // TODO Auto-generated method stub
-        Log.d(Utils.LogTag, "ChatHeadService.onBind()");
+        Log.d(Utils.LogTag, "UIService.onBind()");
         return null;
     }
 

@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import xyz.encryptany.encryptany.services.ChatHeadService;
+import xyz.encryptany.encryptany.services.UIService;
 import xyz.encryptany.encryptany.testing.FakeUIAdapter;
 import xyz.encryptany.encryptany.services.AccessibilityAppAdapter;
 import xyz.encryptany.encryptany.testing.NoOpArchiver;
@@ -81,13 +81,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void startChatHead(){
-        startService(new Intent(MainActivity.this, ChatHeadService.class));
+        startService(new Intent(MainActivity.this, UIService.class));
     }
     private void showChatHeadMsg(){
         java.util.Date now = new java.util.Date();
         String str = "test by henry  " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now);
 
-        Intent it = new Intent(MainActivity.this, ChatHeadService.class);
+        Intent it = new Intent(MainActivity.this, UIService.class);
         it.putExtra(Utils.EXTRA_MSG, str);
         startService(it);
     }

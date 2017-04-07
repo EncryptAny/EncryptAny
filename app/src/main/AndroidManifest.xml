@@ -19,11 +19,7 @@
         </activity>
 
         <service
-            android:name=".services.ChatHeadService"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name=".services.OverlayService"
+            android:name=".services.UIService"
             android:enabled="true"
             android:exported="true" />
 
