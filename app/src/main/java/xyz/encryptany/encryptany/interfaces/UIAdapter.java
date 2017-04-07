@@ -9,5 +9,8 @@ import xyz.encryptany.encryptany.listeners.UIListener;
 public interface UIAdapter {
 
     void setUIListener(UIListener uiListener);
-    void setMessages(Message[] msg);
+    void giveMessage(Message msg);
+    void updateMessages(Message[] msgs);
+    void clearUI();
+    void newActiveApp(String new_app_name);
 }
