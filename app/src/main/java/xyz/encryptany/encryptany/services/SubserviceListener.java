@@ -9,8 +9,11 @@ import android.content.res.Configuration;
  */
 
 public interface SubserviceListener {
-    void onConfigurationChanged(Configuration config);
 
+    // Real service stuff
     Context getApplicationContext();
-    int onStartCommand(Intent intent, int flags, int startId);
+    Object getSystemService(String service);
+
+    // Fake service stuff
+    Context getServiceContext();
 }

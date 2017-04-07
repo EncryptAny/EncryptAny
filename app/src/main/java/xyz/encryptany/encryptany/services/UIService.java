@@ -31,7 +31,7 @@ import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
 
 
-public class ChatHeadService extends Subservice {
+public class UIService extends Subservice {
     private WindowManager windowManager;
     private RelativeLayout chatheadView, removeView, overlayView, editTextView;
     private EditText overlayEditText;
@@ -48,19 +48,11 @@ public class ChatHeadService extends Subservice {
     private OverlayRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    @SuppressWarnings("deprecation")
-
-    @Override
-    public void onCreate() {
-        // TODO Auto-generated method stub
-        super.onCreate();
-        Log.d(Utils.LogTag, "UIService.onCreate()");
-
+    public UIService(SubserviceListener subListener) {
+        super(subListener);
     }
 
     private void handleStart(){
-        Log.d(Utils.LogTag,"handleStart()");
-
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
 
@@ -72,7 +64,7 @@ public class ChatHeadService extends Subservice {
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager = new LinearLayoutManager(getServiceContext());
         recyclerView.setLayoutManager(mLayoutManager);
 
         mAdapter = new OverlayRecyclerViewAdapter();
@@ -131,7 +123,6 @@ public class ChatHeadService extends Subservice {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     Log.d(Utils.LogTag, "Into runnable_longClick");
 
                     isLongclick = true;
@@ -373,7 +364,6 @@ public class ChatHeadService extends Subservice {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     Log.d(Utils.LogTag, "Into runnable_longClick");
 
                     isLongclick = true;
@@ -427,12 +417,8 @@ public class ChatHeadService extends Subservice {
 
     }
 
-
-
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        // TODO Auto-generated method stub
         super.onConfigurationChanged(newConfig);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -446,8 +432,6 @@ public class ChatHeadService extends Subservice {
         WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) chatheadView.getLayoutParams();
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d(Utils.LogTag, "UIService.onConfigurationChanged -> landscap");
-
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
             }
@@ -458,8 +442,6 @@ public class ChatHeadService extends Subservice {
             }
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Log.d(Utils.LogTag, "UIService.onConfigurationChanged -> portrait");
-
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
             }
@@ -474,33 +456,17 @@ public class ChatHeadService extends Subservice {
     }
 
     private void chathead_click(){
-        Log.d(Utils.LogTag, "chathead_click()");
         if(serviceRunning){
-<<<<<<< HEAD:app/src/main/java/xyz/encryptany/encryptany/services/UIService.java
             overlayView.setVisibility(View.GONE);
             serviceRunning = false;
         }else{
-            Log.d(Utils.LogTag, "Starting overlay service");
             overlayView.setVisibility(View.VISIBLE);
-=======
-            // TODO Hide and Show Views
-            //stopService(new Intent(this, OverlayService.class));
-            serviceRunning = false;
-        }else{
-            Log.d(Utils.LogTag, "Starting overlay service");
-            //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            //startActivity(it);
-            // TODO Hide and show views
-            //startService(new Intent(this, OverlayService.class));
->>>>>>> Begain service consolidation code. Waiting on Cory:app/src/main/java/xyz/encryptany/encryptany/services/ChatHeadService.java
             serviceRunning = true;
         }
 
     }
 
     private void chathead_longclick(){
-        Log.d(Utils.LogTag, "Into UIService.chathead_longclick() ");
-
         WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
         int x_cord_remove = (szWindow.x - removeView.getWidth()) / 2;
         int y_cord_remove = szWindow.y - (removeView.getHeight() + getStatusBarHeight() );
@@ -550,7 +516,6 @@ public class ChatHeadService extends Subservice {
 
         @Override
         public void run() {
-            // TODO Auto-generated method stub
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
             }
@@ -558,10 +523,12 @@ public class ChatHeadService extends Subservice {
     };
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
-        Log.d(Utils.LogTag, "UIService.onStartCommand() -> startId=" + startId);
+    void start() {
+        onStartCommand(null, 0, Service.START_STICKY);
+    }
 
+    //@Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent != null){
             Bundle bd = intent.getExtras();
 
@@ -574,7 +541,6 @@ public class ChatHeadService extends Subservice {
 
                         @Override
                         public void run() {
-                            // TODO Auto-generated method stub
                             showMsg(sMsg);
                         }
                     }, 300);
@@ -582,9 +548,7 @@ public class ChatHeadService extends Subservice {
                 }else{
                     showMsg(sMsg);
                 }
-
             }
-
         }
 
         if(startId == Service.START_STICKY) {
@@ -598,7 +562,6 @@ public class ChatHeadService extends Subservice {
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
 
         if(chatheadView != null){
@@ -614,14 +577,5 @@ public class ChatHeadService extends Subservice {
         }
 
     }
-
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO Auto-generated method stub
-        Log.d(Utils.LogTag, "UIService.onBind()");
-        return null;
-    }
-
 
 }

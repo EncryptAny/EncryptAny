@@ -7,7 +7,12 @@ package xyz.encryptany.encryptany.services;
 // Guide Here: https://developer.android.com/guide/topics/ui/accessibility/services.html
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -17,21 +22,48 @@ import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
 
-public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter {
+public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter, SubserviceListener {
 
-    private static final boolean ENABLE_AUTOFILL = true;
+    private static final boolean ENABLE_AUTOFILL = false;
     private AppListener appListener = null;
+
+    Subservice uiService = new UIService(this);
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        uiService.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        uiService.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        uiService.start();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        uiService.onConfigurationChanged(newConfig);
+    }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Log.d("MAXWELL", event.toString());
-        Log.d("MAXWELL", event.getClassName().toString());
+        //Log.d("MAXWELL", event.toString());
+        //Log.d("MAXWELL", event.getClassName().toString());
 
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) {
             return;
         }
-        Log.d("MAXWELL", event.getClassName().toString());
+        //Log.d("MAXWELL", event.getClassName().toString());
 
         // Attempt to find an EditText (so we can try to auto-fill it!)
         // TODO determine if indiscriminate filling is bad.
@@ -58,7 +90,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
 
         if (event.getContentDescription() != null) {
-            Log.d("MAXWELL", event.getContentDescription().toString());
+            //Log.d("MAXWELL", event.getContentDescription().toString());
         }
 
         accessDFS(source, "", 0);
@@ -69,7 +101,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             return;
         }
         if (ani.getText() != null) {
-            Log.d("MAXWELL", depth + ": " + ani.getText().toString());
+            //Log.d("MAXWELL", depth + ": " + ani.getText().toString());
         }
         for (int i=0; i < ani.getChildCount(); ++i) {
             ++depthInt;
@@ -93,4 +125,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         this.appListener = listener;
     }
 
+    @Override
+    public Context getServiceContext() {
+        return this;
+    }
 }
