@@ -22,6 +22,9 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private static final boolean ENABLE_AUTOFILL = true;
     private AppListener appListener = null;
 
+    // App State
+    private String currAppPkg = "";
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Log.d("MAXWELL", event.toString());
@@ -30,6 +33,10 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) {
             return;
+        }
+        String eventPkg = source.getPackageName().toString();
+        if (this.currAppPkg.equals(eventPkg)) {
+
         }
         Log.d("MAXWELL", event.getClassName().toString());
 
