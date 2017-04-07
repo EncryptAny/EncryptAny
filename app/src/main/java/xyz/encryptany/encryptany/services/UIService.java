@@ -30,7 +30,8 @@ import xyz.encryptany.encryptany.OverlayRecyclerViewAdapter;
 import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
 
-public class UIService extends Service {
+
+public class ChatHeadService extends Subservice {
     private WindowManager windowManager;
     private RelativeLayout chatheadView, removeView, overlayView, editTextView;
     private EditText overlayEditText;
@@ -475,11 +476,23 @@ public class UIService extends Service {
     private void chathead_click(){
         Log.d(Utils.LogTag, "chathead_click()");
         if(serviceRunning){
+<<<<<<< HEAD:app/src/main/java/xyz/encryptany/encryptany/services/UIService.java
             overlayView.setVisibility(View.GONE);
             serviceRunning = false;
         }else{
             Log.d(Utils.LogTag, "Starting overlay service");
             overlayView.setVisibility(View.VISIBLE);
+=======
+            // TODO Hide and Show Views
+            //stopService(new Intent(this, OverlayService.class));
+            serviceRunning = false;
+        }else{
+            Log.d(Utils.LogTag, "Starting overlay service");
+            //Intent it = new Intent(this,overlay.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            //startActivity(it);
+            // TODO Hide and show views
+            //startService(new Intent(this, OverlayService.class));
+>>>>>>> Begain service consolidation code. Waiting on Cory:app/src/main/java/xyz/encryptany/encryptany/services/ChatHeadService.java
             serviceRunning = true;
         }
 
