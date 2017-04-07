@@ -44,7 +44,22 @@ public class FakeUIAdapter implements UIAdapter {
     }
 
     @Override
-    public void setMessages(Message[] msgs) {
+    public void giveMessage(Message msg) {
+
+    }
+
+    @Override
+    public void updateMessages(Message[] msgs) {
         this.msgs = msgs;
+    }
+
+    @Override
+    public void clearUI() {
+
+    }
+
+    @Override
+    public void newActiveApp(String new_app_name) {
+
     }
 }
