@@ -13,6 +13,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import xyz.encryptany.encryptany.concrete.EncryptedMessage;
+import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
  * Created by Cory on 2/8/2017.
@@ -20,9 +21,9 @@ import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 
 
 public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecyclerViewAdapter.ViewHolder> {
-    private ArrayList<EncryptedMessage> mMsgs;
+    private ArrayList<Message> mMsgs;
 
-    public OverlayRecyclerViewAdapter(ArrayList<EncryptedMessage> enc_msg) {
+    public OverlayRecyclerViewAdapter(ArrayList<Message> enc_msg) {
         this.mMsgs = enc_msg;
     }
     public OverlayRecyclerViewAdapter() {
@@ -48,13 +49,15 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
         return  mMsgs.size();
     }
 
-    public void addMessage(EncryptedMessage enc_msg) {
+    public void addMessage(Message enc_msg) {
         mMsgs.add(enc_msg);
         super.notifyItemInserted(mMsgs.size() - 1);
     }
 
-    public void updateMessages(ArrayList<EncryptedMessage> enc_msg) {
-        this.mMsgs = enc_msg;
+    public void updateMessages(Message[] enc_msg) {
+        this.mMsgs.clear();
+        for (int i = 0; i < enc_msg.length; ++i)
+            this.mMsgs.add(enc_msg[i]);
         super.notifyDataSetChanged();
     }
 

@@ -25,9 +25,12 @@ import android.widget.TextView;
 import xyz.encryptany.encryptany.OverlayRecyclerViewAdapter;
 import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
+import xyz.encryptany.encryptany.interfaces.Message;
+import xyz.encryptany.encryptany.interfaces.UIAdapter;
+import xyz.encryptany.encryptany.listeners.UIListener;
 
 
-public class UIService extends Subservice {
+public class UIService extends Subservice implements UIAdapter {
     private WindowManager windowManager;
     private RelativeLayout chatheadView, removeView, overlayView, editTextView;
     private EditText overlayEditText;
@@ -43,6 +46,8 @@ public class UIService extends Subservice {
     private RecyclerView recyclerView;
     private OverlayRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private UIListener uiListener;
+    private String activeApp;
 
     public UIService(SubserviceListener subListener) {
         super(subListener);
@@ -553,4 +558,29 @@ public class UIService extends Subservice {
 
     }
 
+    @Override
+    public void setUIListener(UIListener uiListener) {
+        this.uiListener = uiListener;
+    }
+
+    @Override
+    public void giveMessage(Message msg) {
+        mAdapter.addMessage(msg);
+    }
+
+    @Override
+    public void updateMessages(Message[] msgs) {
+        mAdapter.updateMessages(msgs);
+    }
+
+    @Override
+    public void clearUI() {
+        overlayView.setVisibility(View.GONE);
+        editTextView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void newActiveApp(String new_app_name) {
+        this.activeApp = new_app_name;
+    }
 }
