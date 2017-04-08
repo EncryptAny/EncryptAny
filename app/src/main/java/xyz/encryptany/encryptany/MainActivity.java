@@ -5,16 +5,11 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import xyz.encryptany.encryptany.services.UIService;
-import xyz.encryptany.encryptany.testing.FakeUIAdapter;
-import xyz.encryptany.encryptany.services.AccessibilityAppAdapter;
-import xyz.encryptany.encryptany.testing.NoOpArchiver;
-import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
 public class MainActivity extends AppCompatActivity {
 

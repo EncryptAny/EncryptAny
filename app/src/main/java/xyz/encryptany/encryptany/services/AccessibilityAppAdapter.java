@@ -7,13 +7,9 @@ package xyz.encryptany.encryptany.services;
 // Guide Here: https://developer.android.com/guide/topics/ui/accessibility/services.html
 
 import android.accessibilityservice.AccessibilityService;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -22,7 +18,6 @@ import xyz.encryptany.encryptany.concrete.JSONMessageCodecStrategy;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
-import xyz.encryptany.encryptany.testing.FakeUIAdapter;
 import xyz.encryptany.encryptany.testing.NoOpArchiver;
 import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
@@ -31,7 +26,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private static final boolean ENABLE_AUTOFILL = false;
     private AppListener appListener = null;
 
-    Subservice uiService = new UIService(this);
+    UIService uiService = new UIService(this);
 
 
     @Override
@@ -49,7 +44,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     // This is where we want to put all of our initalization code
     @Override
     protected void onServiceConnected() {
-        Mediator m = new Mediator(new AccessibilityAppAdapter(), new FakeUIAdapter(), new NoOpEncryptor(), new NoOpArchiver());
+        Mediator m = new Mediator(new AccessibilityAppAdapter(), uiService, new NoOpEncryptor(), new NoOpArchiver());
         super.onServiceConnected();
         uiService.start();
     }
