@@ -48,6 +48,8 @@ public class UIService extends Subservice implements UIAdapter {
     private RecyclerView.LayoutManager mLayoutManager;
     private UIListener uiListener;
     private String activeApp;
+    private String srcName;
+    private String destName;
 
     public UIService(SubserviceListener subListener) {
         super(subListener);
@@ -306,6 +308,8 @@ public class UIService extends Subservice implements UIAdapter {
                     @Override
                     public void onClick(View v) {
                         // Grab text first
+                        uiListener.sendMessageFromUIAdapter(overlayEditText.getText().toString(),srcName,activeApp);
+                        // Start encryption process?
                         editTextView.clearFocus();
                         overlayEditText.setText("");
                         // Have to do this, no other way
@@ -574,13 +578,28 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     @Override
+    public void showChathead() {
+        chatheadView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     public void clearUI() {
         overlayView.setVisibility(View.GONE);
         editTextView.setVisibility(View.GONE);
     }
 
     @Override
-    public void newActiveApp(String new_app_name) {
+    public void setActiveApp(String new_app_name) {
         this.activeApp = new_app_name;
+    }
+
+    @Override
+    public void setSourceName(String src_name) {
+        this.srcName = src_name;
+    }
+
+    @Override
+    public void setDestName(String dest_name) {
+        this.destName = dest_name;
     }
 }
