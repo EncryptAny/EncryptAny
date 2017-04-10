@@ -37,7 +37,7 @@ public class UIService extends Subservice implements UIAdapter {
     private Button overlayEditTextSend, overlayShowEditText;
     private LinearLayout txtView, txt_linearlayout;
     private ImageView chatheadImg, removeImg;
-    private TextView  txt1;
+    private TextView   txt1;
     private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
     private Point szWindow = new Point();
     private boolean isLeft = true;
@@ -308,12 +308,14 @@ public class UIService extends Subservice implements UIAdapter {
                     @Override
                     public void onClick(View v) {
                         // Grab text first
-                        uiListener.sendMessageFromUIAdapter(overlayEditText.getText().toString(),srcName,activeApp);
+                        String userTxt = overlayEditText.getText().toString();
                         // Start encryption process?
                         editTextView.clearFocus();
                         overlayEditText.setText("");
                         // Have to do this, no other way
                         editTextView.setVisibility(View.GONE);
+                        hideOverlay();
+                        uiListener.sendMessageFromUIAdapter(userTxt,srcName,activeApp);
                     }
                 }
         );
@@ -339,7 +341,7 @@ public class UIService extends Subservice implements UIAdapter {
                         editTextView.clearFocus();
                         // Have to do this, no other way
                         editTextView.setVisibility(View.GONE);
-
+                        break;
                 }
                 return true;
             }
@@ -452,6 +454,13 @@ public class UIService extends Subservice implements UIAdapter {
         }
 
     }
+
+    private void hideOverlay() {
+        overlayView.setVisibility(View.GONE);
+        serviceRunning = false;
+    }
+
+
 
     private void chathead_longclick(){
         WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
