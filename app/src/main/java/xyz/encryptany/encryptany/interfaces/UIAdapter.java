@@ -11,7 +11,7 @@ public interface UIAdapter {
     void setUIListener(UIListener uiListener);
     void giveMessage(Message msg);
     void updateMessages(Message[] msgs);
-    void clearUI();
+    void minimizeUI();
     void showChathead();
     void setActiveApp(String new_app_name);
     void setSourceName(String src_name);

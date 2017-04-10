@@ -41,7 +41,7 @@ public class UIService extends Subservice implements UIAdapter {
     private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
     private Point szWindow = new Point();
     private boolean isLeft = true;
-    private boolean serviceRunning = false;
+    private boolean overlayVisible = false;
     private String sMsg = "";
     private RecyclerView recyclerView;
     private OverlayRecyclerViewAdapter mAdapter;
@@ -76,18 +76,9 @@ public class UIService extends Subservice implements UIAdapter {
         overlayView.addView(recyclerView);
 
         removeView = (RelativeLayout)inflater.inflate(R.layout.remove, null);
-        WindowManager.LayoutParams paramRemove = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT);
-        paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
 
         removeView.setVisibility(View.GONE);
         removeImg = (ImageView)removeView.findViewById(R.id.remove_img);
-
-        windowManager.addView(removeView, paramRemove);
 
 
         chatheadView = (RelativeLayout) inflater.inflate(R.layout.chathead, null);
@@ -101,17 +92,6 @@ public class UIService extends Subservice implements UIAdapter {
             int h = windowManager.getDefaultDisplay().getHeight();
             szWindow.set(w, h);
         }
-
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.LEFT;
-        params.x = 0;
-        params.y = 100;
-        windowManager.addView(chatheadView, params);
 
         chatheadView.setOnTouchListener(new View.OnTouchListener() {
             long time_start = 0, time_end = 0;
@@ -262,17 +242,7 @@ public class UIService extends Subservice implements UIAdapter {
         txt1 = (TextView) txtView.findViewById(R.id.txt1);
         txt_linearlayout = (LinearLayout)txtView.findViewById(R.id.txt_linearlayout);
 
-
-        WindowManager.LayoutParams paramsTxt = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT);
-        paramsTxt.gravity = Gravity.TOP | Gravity.LEFT;
-
         txtView.setVisibility(View.GONE);
-        windowManager.addView(txtView, paramsTxt);
 
         WindowManager.LayoutParams params_overlayView = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -308,6 +278,7 @@ public class UIService extends Subservice implements UIAdapter {
                     @Override
                     public void onClick(View v) {
                         // Grab text first
+                        showMsg("Encrypting message.");
                         String userTxt = overlayEditText.getText().toString();
                         // Start encryption process?
                         editTextView.clearFocus();
@@ -320,17 +291,10 @@ public class UIService extends Subservice implements UIAdapter {
                 }
         );
 
-        WindowManager.LayoutParams params_editTextView = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                200,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
-                        WindowManager.LayoutParams.FLAG_DIM_BEHIND,
-                PixelFormat.TRANSPARENT);
-        params_editTextView.gravity = Gravity.BOTTOM;
-        params_editTextView.dimAmount = (float)0.2;
-        windowManager.addView(editTextView, params_editTextView);
+        createEditTextWindow();
+        createRemoveViewWindow();
+        createChatheadTxtViewWindow();
+        createChatheadWindow();
 
         editTextView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -445,19 +409,19 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     private void chathead_click(){
-        if(serviceRunning){
+        if(overlayVisible){
             overlayView.setVisibility(View.GONE);
-            serviceRunning = false;
+            overlayVisible = false;
         }else{
             overlayView.setVisibility(View.VISIBLE);
-            serviceRunning = true;
+            overlayVisible = true;
         }
 
     }
 
     private void hideOverlay() {
         overlayView.setVisibility(View.GONE);
-        serviceRunning = false;
+        overlayVisible = false;
     }
 
 
@@ -514,6 +478,56 @@ public class UIService extends Subservice implements UIAdapter {
             }
         }
     };
+
+    private void createChatheadWindow()
+    {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.x = 0;
+        params.y = 100;
+        windowManager.addView(chatheadView, params);
+    }
+    private void createRemoveViewWindow()
+    {
+        WindowManager.LayoutParams paramRemove = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
+        windowManager.addView(removeView, paramRemove);
+    }
+    private void createEditTextWindow()
+    {
+        WindowManager.LayoutParams params_editTextView = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                200,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                PixelFormat.TRANSPARENT);
+        params_editTextView.gravity = Gravity.BOTTOM;
+        params_editTextView.dimAmount = (float)0.2;
+        windowManager.addView(editTextView, params_editTextView);
+    }
+    private void createChatheadTxtViewWindow()
+    {
+        WindowManager.LayoutParams paramsTxt = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        paramsTxt.gravity = Gravity.TOP | Gravity.LEFT;
+        windowManager.addView(txtView, paramsTxt);
+    }
 
     @Override
     void start() {
@@ -579,11 +593,13 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void giveMessage(Message msg) {
         mAdapter.addMessage(msg);
+        showMsg("Message received.");
     }
 
     @Override
     public void updateMessages(Message[] msgs) {
         mAdapter.updateMessages(msgs);
+        showMsg("Conversation retrieved.");
     }
 
     @Override
@@ -592,9 +608,10 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     @Override
-    public void clearUI() {
+    public void minimizeUI() {
         overlayView.setVisibility(View.GONE);
         editTextView.setVisibility(View.GONE);
+        txtView.setVisibility(View.GONE);
     }
 
     @Override

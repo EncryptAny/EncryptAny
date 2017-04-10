@@ -18,8 +18,10 @@
         android:ems="10"
         android:inputType="text"
         android:text=""
+        android:textColor="@color/dark"
         android:layout_alignTop="@+id/overlayTextSend"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/overlayTextSend" />
 
     <Button
         android:id="@+id/overlayTextSend"
