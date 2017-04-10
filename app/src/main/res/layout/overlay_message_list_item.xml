@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:alpha="0.6"
-    android:background="@color/blue"
+    android:background="@color/white"
     android:id="@+id/overlay_message_list_item">
 
     <TextView
@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:textStyle="normal|bold"
         android:id="@+id/overlay_msg_sender" />
 
     <TextView
@@ -29,5 +30,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/overlay_msg_content"
         android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 </RelativeLayout>

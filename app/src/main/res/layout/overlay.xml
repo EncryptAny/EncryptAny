@@ -5,10 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/gray"
-    android:paddingBottom="2dp"
     android:paddingLeft="2dp"
     android:paddingRight="2dp"
-    android:paddingTop="32dp"
+    android:paddingTop="20dp"
     tools:context="xyz.encryptany.encryptany.Overlay">
 
 
@@ -16,6 +15,7 @@
         android:id="@+id/overlayEditTextShow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:text="Encrypt a Message"
         android:layout_alignParentBottom="true"/>
 </RelativeLayout>

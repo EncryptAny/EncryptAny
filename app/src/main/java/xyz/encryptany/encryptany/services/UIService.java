@@ -25,6 +25,7 @@ import android.widget.TextView;
 import xyz.encryptany.encryptany.OverlayRecyclerViewAdapter;
 import xyz.encryptany.encryptany.R;
 import xyz.encryptany.encryptany.Utils;
+import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.UIAdapter;
 import xyz.encryptany.encryptany.listeners.UIListener;
@@ -50,30 +51,41 @@ public class UIService extends Subservice implements UIAdapter {
     private String activeApp;
     private String srcName;
     private String destName;
+    private MessageFactory messageFactory;
+    private Message newMessage;
 
     public UIService(SubserviceListener subListener) {
         super(subListener);
     }
 
     private void handleStart(){
+        messageFactory = new MessageFactory();
+        srcName = "idk the username yet";
+        destName = "idk the other recipient yet";
+        activeApp = "idk the active app yet";
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
 
+        mAdapter = new OverlayRecyclerViewAdapter();
+
         overlayView = (RelativeLayout) inflater.inflate(R.layout.overlay, null);
+
         recyclerView = (RecyclerView) inflater.inflate(R.layout.overlay_recycler_view, null);
+        recyclerView.setAdapter(mAdapter);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
-
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(getServiceContext());
         recyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new OverlayRecyclerViewAdapter();
-        recyclerView.setAdapter(mAdapter);
 
-        overlayView.addView(recyclerView);
+        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
+                RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.ABOVE,R.id.overlayEditTextShow);
+
+        overlayView.addView(recyclerView,relativeParams);
 
         removeView = (RelativeLayout)inflater.inflate(R.layout.remove, null);
 
@@ -201,6 +213,7 @@ public class UIService extends Subservice implements UIAdapter {
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
+                            minimizeUI();
                             chatheadView.setVisibility(View.GONE);
                             inBounded = false;
                             break;
@@ -280,12 +293,14 @@ public class UIService extends Subservice implements UIAdapter {
                         // Grab text first
                         showMsg("Encrypting message.");
                         String userTxt = overlayEditText.getText().toString();
+                        newMessage = messageFactory.createNewMessage(userTxt,srcName,activeApp);
                         // Start encryption process?
                         editTextView.clearFocus();
                         overlayEditText.setText("");
                         // Have to do this, no other way
                         editTextView.setVisibility(View.GONE);
                         hideOverlay();
+                        mAdapter.addMessage(newMessage);
                         uiListener.sendMessageFromUIAdapter(userTxt,srcName,activeApp);
                     }
                 }
@@ -507,7 +522,7 @@ public class UIService extends Subservice implements UIAdapter {
     {
         WindowManager.LayoutParams params_editTextView = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
-                200,
+                300,
                 WindowManager.LayoutParams.TYPE_PHONE,
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |

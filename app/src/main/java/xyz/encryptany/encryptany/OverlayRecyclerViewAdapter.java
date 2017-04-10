@@ -10,9 +10,13 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.lang.reflect.Array;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import xyz.encryptany.encryptany.concrete.EncryptedMessage;
+import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
@@ -22,12 +26,17 @@ import xyz.encryptany.encryptany.interfaces.Message;
 
 public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecyclerViewAdapter.ViewHolder> {
     private ArrayList<Message> mMsgs;
+    private Format format;
 
-    public OverlayRecyclerViewAdapter(ArrayList<Message> enc_msg) {
-        this.mMsgs = enc_msg;
+    public OverlayRecyclerViewAdapter(ArrayList<Message> msg) {
+
+        this.mMsgs = msg;
+        this.format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
     }
     public OverlayRecyclerViewAdapter() {
+
         this.mMsgs = new ArrayList<>();
+        this.format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
     }
 
     @Override
@@ -40,7 +49,7 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
     @Override
     public void onBindViewHolder(OverlayRecyclerViewAdapter.ViewHolder holder, int position) {
         holder.tvMsgSender.setText(mMsgs.get(position).getAuthor());
-        holder.tvMsgTimestamp.setText(Long.toString(mMsgs.get(position).getDate()));
+        holder.tvMsgTimestamp.setText(longToTS(mMsgs.get(position).getDate()));
         holder.tvMsgContent.setText(mMsgs.get(position).getMessage());
     }
 
@@ -49,15 +58,18 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
         return  mMsgs.size();
     }
 
-    public void addMessage(Message enc_msg) {
-        mMsgs.add(enc_msg);
-        super.notifyItemInserted(mMsgs.size() - 1);
+    public void addMessage(Message msg) {
+        if (mMsgs.size() == 0)
+            mMsgs.add(0, msg);
+        else
+            mMsgs.add(mMsgs.size(),msg);
+        super.notifyDataSetChanged();
     }
 
-    public void updateMessages(Message[] enc_msg) {
+    public void updateMessages(Message[] msg) {
         this.mMsgs.clear();
-        for (int i = 0; i < enc_msg.length; ++i)
-            this.mMsgs.add(enc_msg[i]);
+        for (int i = 0; i < msg.length; ++i)
+            this.mMsgs.add(msg[i]);
         super.notifyDataSetChanged();
     }
 
@@ -77,6 +89,11 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
         public String toString() {
             return super.toString();
         }
+    }
+    private String longToTS(long time)
+    {
+        Date date = new Date(time);
+        return format.format(date);
     }
 
 }
