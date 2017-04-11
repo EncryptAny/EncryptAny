@@ -1,6 +1,7 @@
 package xyz.encryptany.encryptany.concrete;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.interfaces.MessageCodecStrategy;
@@ -14,7 +15,12 @@ public class JSONMessageCodecStrategy implements MessageCodecStrategy {
     @Override
     public Message parseText(String rawText) {
         Gson gson = new Gson();
-        EncryptedMessage rm = gson.fromJson(rawText, EncryptedMessage.class);
+        EncryptedMessage rm;
+        try {
+            rm = gson.fromJson(rawText, EncryptedMessage.class);
+        } catch (JsonSyntaxException e) {
+            rm = null;
+        }
         return rm;
     }
 

@@ -17,6 +17,11 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.google.android.gms.iid.InstanceID;
+
+import java.util.LinkedList;
+import java.util.List;
+
 import xyz.encryptany.encryptany.Mediator;
 import xyz.encryptany.encryptany.concrete.JSONMessageCodecStrategy;
 import xyz.encryptany.encryptany.interfaces.MessageCodecStrategy;
@@ -140,6 +145,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             }
             currentWindow.setCurrTextView(event, source);
             sendMessageIfApplicable();
+            // return since we don't want to count an edit text as something else that can be processed.
+            return;
         }
 
 
@@ -159,8 +166,14 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 //        if (event.getContentDescription() != null) {
 //            //Log.d("MAXWELL", event.getContentDescription().toString());
 //        }
-
-        //accessDFS(source, "", 0);
+        List <Message> foundMessages = lookForMessages(source);
+        for (Message foundMessage : foundMessages) {
+            appListener.setMessageReceived(foundMessage);
+        }
+        String token = InstanceID.getInstance(getServiceContext()).getId();
+        if (DEBUG) {
+            Log.d(TAG, "InstanceID: " + token);
+        }
     }
 
     /**
@@ -223,17 +236,40 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     @Override
     public void onInterrupt() {}
 
-    static private void accessDFS(AccessibilityNodeInfo ani, String depth, int depthInt) {
+    private List<Message> lookForMessages(AccessibilityNodeInfo source) {
+        List<Message> foundMsgs = new LinkedList<>();
+        lookForMessagesHelper(source, foundMsgs, "", 0);
+        if (DEBUG) {
+            for (Message foundMsg : foundMsgs) {
+                Log.d(TAG, "Found Encoded Message: " + foundMsg.getMessage());
+            }
+        }
+        return foundMsgs;
+    }
+
+    private void lookForMessagesHelper(AccessibilityNodeInfo ani, List<Message> foundMessages, String depth, int depthInt) {
         if (ani == null) {
             return;
         }
         if (ani.getText() != null) {
-            //Log.d("MAXWELL", depth + ": " + ani.getText().toString());
+            String txt = ani.getText().toString();
+//            if (DEBUG && txt.contains("{")) {
+//                Log.d(TAG, depth + ": " + txt);
+//            }
+            Message msg = attemptMessageDecode(txt);
+            if (msg != null) {
+                foundMessages.add(msg);
+            }
         }
         for (int i=0; i < ani.getChildCount(); ++i) {
             ++depthInt;
-            accessDFS(ani.getChild(i), depth + " " + depthInt, depthInt);
+            lookForMessagesHelper(ani.getChild(i), foundMessages, depth + " " + depthInt, depthInt);
         }
+    }
+
+    private Message attemptMessageDecode(String rawInputText) {
+        Message msg = msgCodec.parseText(rawInputText);
+        return msg;
     }
 
     @Override
