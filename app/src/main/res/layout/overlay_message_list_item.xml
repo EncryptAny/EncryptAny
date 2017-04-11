@@ -28,6 +28,7 @@
         android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/overlay_msg_sender"
         android:id="@+id/overlay_msg_content"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"

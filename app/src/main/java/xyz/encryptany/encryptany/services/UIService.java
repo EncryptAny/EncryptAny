@@ -60,9 +60,9 @@ public class UIService extends Subservice implements UIAdapter {
 
     private void handleStart(){
         messageFactory = new MessageFactory();
-        srcName = "idk the username yet";
-        destName = "idk the other recipient yet";
-        activeApp = "idk the active app yet";
+        srcName = "You";
+        destName = "Recipient";
+        activeApp = "Application";
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
 
