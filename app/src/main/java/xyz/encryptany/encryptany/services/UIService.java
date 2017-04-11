@@ -292,6 +292,7 @@ public class UIService extends Subservice implements UIAdapter {
                     public void onClick(View v) {
                         // Grab text first
                         showMsg("Encrypting message.");
+                        setStatusYellow();
                         String userTxt = overlayEditText.getText().toString();
                         newMessage = messageFactory.createNewMessage(userTxt,srcName,activeApp);
                         // Start encryption process?
@@ -426,9 +427,11 @@ public class UIService extends Subservice implements UIAdapter {
     private void chathead_click(){
         if(overlayVisible){
             overlayView.setVisibility(View.GONE);
+            setStatusBlue();
             overlayVisible = false;
         }else{
             overlayView.setVisibility(View.VISIBLE);
+            setStatusGreen();
             overlayVisible = true;
         }
 
@@ -490,6 +493,7 @@ public class UIService extends Subservice implements UIAdapter {
         public void run() {
             if(txtView != null){
                 txtView.setVisibility(View.GONE);
+                setStatusBlue();
             }
         }
     };
@@ -642,5 +646,25 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void setDestName(String dest_name) {
         this.destName = dest_name;
+    }
+
+    @Override
+    public void setStatusRed() {
+        chatheadImg.setImageResource(R.drawable.encryptany_logo_red);
+    }
+
+    @Override
+    public void setStatusYellow() {
+        chatheadImg.setImageResource(R.drawable.encryptany_logo_yellow);
+    }
+
+    @Override
+    public void setStatusGreen() {
+        chatheadImg.setImageResource(R.drawable.encryptany_logo_green);
+    }
+
+    @Override
+    public void setStatusBlue() {
+        chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
     }
 }

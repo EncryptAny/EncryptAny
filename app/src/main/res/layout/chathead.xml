@@ -7,7 +7,7 @@
     <ImageView android:layout_width="65dp"
         android:layout_height="65dp"
         android:id="@+id/chathead_img"
-        android:src="@drawable/encryptany_logo" />
+        android:src="@drawable/encryptany_logo_blue" />
     
    
 

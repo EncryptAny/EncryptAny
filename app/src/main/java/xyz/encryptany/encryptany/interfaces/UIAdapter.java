@@ -16,4 +16,8 @@ public interface UIAdapter {
     void setActiveApp(String new_app_name);
     void setSourceName(String src_name);
     void setDestName(String dest_name);
+    void setStatusRed();
+    void setStatusYellow();
+    void setStatusGreen();
+    void setStatusBlue();
 }
