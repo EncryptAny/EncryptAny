@@ -42,7 +42,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     }
 
     @Override
-    public void setMessageReceived(Message message) {
+    public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate) {
         // TODO implement
     }
 

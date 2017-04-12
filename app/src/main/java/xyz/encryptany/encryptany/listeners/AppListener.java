@@ -7,6 +7,6 @@ import xyz.encryptany.encryptany.interfaces.Message;
  */
 
 public interface AppListener {
-    void setMessageReceived(Message message);
+    void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate);
     void getMessages();
 }
