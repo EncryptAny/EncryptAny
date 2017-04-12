@@ -7,17 +7,28 @@ import xyz.encryptany.encryptany.listeners.UIListener;
  */
 
 public interface UIAdapter {
-
+    enum UIStatus {
+        INACTIVE,
+        ACTIVE,
+        READY,
+        AWAITING_ENCRYPT,
+        BUSY
+    }
+    enum UIWindowState {
+        SHOWING,
+        MINIMIZED,
+        EDITING_TEXT,
+        CLOSED
+    }
     void setUIListener(UIListener uiListener);
     void giveMessage(Message msg);
     void updateMessages(Message[] msgs);
-    void minimizeUI();
-    void showChathead();
-    void setActiveApp(String new_app_name);
-    void setSourceName(String src_name);
-    void setDestName(String dest_name);
-    void setStatusRed();
-    void setStatusYellow();
-    void setStatusGreen();
-    void setStatusBlue();
+    void setActiveAppName(String new_app_name);
+    void setAuthorName(String author_name);
+    void setRecipientName(String recipient_name);
+    UIWindowState getUIWindowState();
+    UIStatus getUIStatus();
+    void setUIStatus(UIStatus uistatus);
+    void setUIWindowState_Minimized();
+
 }

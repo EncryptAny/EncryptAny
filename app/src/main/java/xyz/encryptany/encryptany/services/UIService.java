@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Contacts;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -42,17 +43,18 @@ public class UIService extends Subservice implements UIAdapter {
     private int x_init_cord, y_init_cord, x_init_margin, y_init_margin;
     private Point szWindow = new Point();
     private boolean isLeft = true;
-    private boolean overlayVisible = false;
     private String sMsg = "";
     private RecyclerView recyclerView;
     private OverlayRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private UIListener uiListener;
     private String activeApp;
-    private String srcName;
-    private String destName;
+    private String authorName;
+    private String recipientName;
     private MessageFactory messageFactory;
     private Message newMessage;
+    private UIStatus uiStatus;
+    private UIWindowState uiWindowState;
 
     public UIService(SubserviceListener subListener) {
         super(subListener);
@@ -60,8 +62,8 @@ public class UIService extends Subservice implements UIAdapter {
 
     private void handleStart(){
         messageFactory = new MessageFactory();
-        srcName = "You";
-        destName = "Recipient";
+        authorName = "You";
+        recipientName = "Recipient";
         activeApp = "Application";
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -213,9 +215,12 @@ public class UIService extends Subservice implements UIAdapter {
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
-                            minimizeUI();
-                            chatheadView.setVisibility(View.GONE);
-                            inBounded = false;
+                            if (uiStatus != UIStatus.BUSY) {
+                                setUIWindowState_Minimized();
+                                chatheadView.setVisibility(View.GONE);
+                                inBounded = false;
+                                uiWindowState = UIWindowState.CLOSED;
+                            }
                             break;
                         }
 
@@ -274,6 +279,7 @@ public class UIService extends Subservice implements UIAdapter {
                     @Override
                     public void onClick(View v) {
                         editTextView.setVisibility(View.VISIBLE);
+                        uiWindowState = UIWindowState.EDITING_TEXT;
                     }
                 }
         );
@@ -291,18 +297,17 @@ public class UIService extends Subservice implements UIAdapter {
                     @Override
                     public void onClick(View v) {
                         // Grab text first
-                        showMsg("Encrypting message.");
-                        setStatusYellow();
+                        setUIStatus(UIStatus.AWAITING_ENCRYPT);
                         String userTxt = overlayEditText.getText().toString();
-                        newMessage = messageFactory.createNewMessage(userTxt,srcName,activeApp);
+                        newMessage = messageFactory.createNewMessage(userTxt,authorName,activeApp);
                         // Start encryption process?
                         editTextView.clearFocus();
                         overlayEditText.setText("");
                         // Have to do this, no other way
                         editTextView.setVisibility(View.GONE);
-                        hideOverlay();
+                        setUIWindowState_Minimized();
                         mAdapter.addMessage(newMessage);
-                        uiListener.sendMessageFromUIAdapter(userTxt,srcName,activeApp);
+                        uiListener.sendMessageFromUIAdapter(userTxt,authorName,activeApp);
                     }
                 }
         );
@@ -384,7 +389,11 @@ public class UIService extends Subservice implements UIAdapter {
             }
         });
 
-    }
+        // Can start this as inactive if app adapter correctly signals presence of compatibile apps
+        setUIStatus(UIStatus.INACTIVE);
+        setUIWindowState_Minimized();
+
+    }//HandleStart
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -425,21 +434,15 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     private void chathead_click(){
-        if(overlayVisible){
-            overlayView.setVisibility(View.GONE);
-            setStatusBlue();
-            overlayVisible = false;
+        if(uiWindowState == UIWindowState.SHOWING){
+            setUIWindowState_Minimized();
         }else{
-            overlayView.setVisibility(View.VISIBLE);
-            setStatusGreen();
-            overlayVisible = true;
+            if(uiWindowState == uiWindowState.MINIMIZED && uiStatus != UIStatus.INACTIVE){
+                overlayView.setVisibility(View.VISIBLE);
+                uiWindowState = UIWindowState.SHOWING;
+            }
         }
 
-    }
-
-    private void hideOverlay() {
-        overlayView.setVisibility(View.GONE);
-        overlayVisible = false;
     }
 
 
@@ -480,8 +483,7 @@ public class UIService extends Subservice implements UIAdapter {
             txtView.setVisibility(View.VISIBLE);
             windowManager.updateViewLayout(txtView, param_txt);
 
-            myHandler.postDelayed(myRunnable, 4000);
-
+            myHandler.postDelayed(myRunnable,5000);
         }
 
     }
@@ -492,9 +494,10 @@ public class UIService extends Subservice implements UIAdapter {
         @Override
         public void run() {
             if(txtView != null){
+                txt1.setText("");
                 txtView.setVisibility(View.GONE);
-                setStatusBlue();
             }
+            uiWindowState = UIWindowState.MINIMIZED;
         }
     };
 
@@ -594,6 +597,14 @@ public class UIService extends Subservice implements UIAdapter {
             windowManager.removeView(chatheadView);
         }
 
+        if(overlayView != null){
+            windowManager.removeView(overlayView);
+        }
+
+        if(editTextView != null){
+            windowManager.removeView(editTextView);
+        }
+
         if(txtView != null){
             windowManager.removeView(txtView);
         }
@@ -612,59 +623,79 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void giveMessage(Message msg) {
         mAdapter.addMessage(msg);
-        showMsg("Message received.");
+        setUIStatus(UIStatus.READY);
+        showMsg("Message Received.");
     }
 
     @Override
     public void updateMessages(Message[] msgs) {
         mAdapter.updateMessages(msgs);
-        showMsg("Conversation retrieved.");
+        setUIStatus(UIStatus.READY);
+        showMsg("Conversation Retrieved.");
     }
 
     @Override
-    public void showChathead() {
-        chatheadView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void minimizeUI() {
-        overlayView.setVisibility(View.GONE);
-        editTextView.setVisibility(View.GONE);
-        txtView.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void setActiveApp(String new_app_name) {
+    public void setActiveAppName(String new_app_name) {
         this.activeApp = new_app_name;
     }
 
     @Override
-    public void setSourceName(String src_name) {
-        this.srcName = src_name;
+    public void setAuthorName(String author_name) {
+        this.authorName = author_name;
     }
 
     @Override
-    public void setDestName(String dest_name) {
-        this.destName = dest_name;
+    public void setRecipientName(String recipient_name) {
+        this.recipientName = recipient_name;
     }
 
     @Override
-    public void setStatusRed() {
-        chatheadImg.setImageResource(R.drawable.encryptany_logo_red);
+    public UIWindowState getUIWindowState() {
+        return this.uiWindowState;
     }
 
     @Override
-    public void setStatusYellow() {
-        chatheadImg.setImageResource(R.drawable.encryptany_logo_yellow);
+    public UIStatus getUIStatus() {
+        return this.uiStatus;
     }
 
     @Override
-    public void setStatusGreen() {
-        chatheadImg.setImageResource(R.drawable.encryptany_logo_green);
+    public void setUIStatus(UIStatus uistatus) {
+        switch(uistatus)
+        {
+            case ACTIVE:
+                chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
+                chatheadImg.setAlpha((float)1.0);
+                break;
+            case AWAITING_ENCRYPT:
+                showMsg("Encrypting Message");
+                chatheadImg.setImageResource(R.drawable.encryptany_logo_yellow);
+                chatheadImg.setAlpha((float)1.0);
+                break;
+            case BUSY:
+                showMsg("Performing Operations");
+                chatheadImg.setImageResource(R.drawable.encryptany_logo_red);
+                chatheadImg.setAlpha((float)1.0);
+                break;
+            case INACTIVE:
+                chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
+                chatheadImg.setAlpha((float)0.6);
+                break;
+            case READY:
+                chatheadImg.setImageResource(R.drawable.encryptany_logo_green);
+                chatheadImg.setAlpha((float)1.0);
+                break;
+            default:
+                break;
+        }
+        this.uiStatus = uistatus;
     }
 
     @Override
-    public void setStatusBlue() {
-        chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
+    public void setUIWindowState_Minimized() {
+        removeView.setVisibility(View.GONE);
+        editTextView.setVisibility(View.GONE);
+        overlayView.setVisibility(View.GONE);
+        this.uiWindowState = UIWindowState.MINIMIZED;
     }
 }

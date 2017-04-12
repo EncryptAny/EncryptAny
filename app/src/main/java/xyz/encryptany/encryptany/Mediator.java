@@ -74,7 +74,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     private boolean encryptMessage(Message message){
         //send message to encryption adapter
         encryptionAdapter.encryptMessage(message);
-
         return false;
     }
     private boolean decryptMessage(Message message){
@@ -91,13 +90,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     private boolean displayReceivedMessage(Message message){
         //UI Adapter Call for displaying messages received from the app, depends on how Cory decides to implement his adapter
-
-        return false;
-    }
-
-    private boolean displaySentMessage(){
-        //Either Cory implements this inside his adapter and we get rid of this method or Cory does some sort of self UI adapter call
-        return false;
+        uiAdapter.giveMessage(message);
+        return true;
     }
 
     private boolean receiveMessageFromApp(String result,String otherParticipant, String appSource){
@@ -126,7 +120,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     public void conversationReady() {
         //UI update to allow conversation to begin
         conversationReady = true;
-
     }
     @Override
     public void messageDecrypted(String result,String otherParticipant, String appSource){
