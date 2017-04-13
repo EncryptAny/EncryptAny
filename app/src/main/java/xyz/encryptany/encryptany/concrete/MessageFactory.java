@@ -20,8 +20,8 @@ public class MessageFactory {
     public Message createNewInitMessage(String otherParticipant,String app){
         return new EncryptedMessage("LetsStartAnOTRConvo",otherParticipant, app, new Date().getTime());
     }
-    public Message createNewMessage(String message, String otherParticipant, String app){
-        return new EncryptedMessage(message, otherParticipant, app, new Date().getTime());
+    public Message createNewMessage(String message, String otherParticipant, String app, long unixDate){
+        return new EncryptedMessage(message, otherParticipant, app, unixDate);
     }
     public Message[] reconstructConversationMessages(Cursor cursor){
         cursor.moveToFirst();

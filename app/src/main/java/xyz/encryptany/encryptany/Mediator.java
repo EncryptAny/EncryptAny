@@ -2,6 +2,8 @@ package xyz.encryptany.encryptany;
 
 import net.sqlcipher.Cursor;
 
+import java.util.Date;
+
 import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Archiver;
@@ -26,6 +28,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     boolean conversationReady;
 
+    long currentMessageUnixDate;
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter){
         this.appAdapter = appAdapter;
@@ -39,11 +42,15 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         appAdapter.setMessageUpdatedListener(this);
         uiAdapter.setUIListener(this);
         encryptionAdapter.setEncryptionListener(this);
+
+        currentMessageUnixDate = 0;
     }
 
     @Override
     public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate) {
         // TODO implement
+        currentMessageUnixDate = unixDate;
+        receiveMessageFromApp(messageContent,otherParticipant,application);
     }
 
     @Override
@@ -59,8 +66,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     public void sendMessageFromUIAdapter(String messageString,String otherParticipant, String appSource){
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
-
-        Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource);
+        currentMessageUnixDate = new Date().getTime();
+        Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource,currentMessageUnixDate);
         encryptMessage(payload);
         archiveMessage(payload);
 
@@ -68,7 +75,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void startEncryptionProcess(String otherParticipant, String app) {
-        encryptionAdapter.initialization(messageFactory.createNewMessage("Let's take this somewhere private",otherParticipant,app));
+        encryptionAdapter.initialization(messageFactory.createNewInitMessage(otherParticipant,app));
     }
 
     private boolean encryptMessage(Message message){
@@ -95,7 +102,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     }
 
     private boolean receiveMessageFromApp(String result,String otherParticipant, String appSource){
-        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource);
+        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource,currentMessageUnixDate);
         encryptionAdapter.decryptMessage(payload);
 
         return false;
@@ -111,7 +118,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void sendingMessage(String result, String otherParticipant, String appSource) {
         //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource);
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource,currentMessageUnixDate);
         sendMessageToApp(message);
 
     }
@@ -124,7 +131,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void messageDecrypted(String result,String otherParticipant, String appSource){
         //display decrypted message to UI and store in archiver
-        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource);
+        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource,currentMessageUnixDate);
         displayReceivedMessage(payload);
         archiveMessage(payload);
     }
