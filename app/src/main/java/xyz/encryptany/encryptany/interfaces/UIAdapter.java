@@ -7,18 +7,18 @@ import xyz.encryptany.encryptany.listeners.UIListener;
  */
 
 public interface UIAdapter {
+    enum UIWindowState {
+        SHOWING,
+        MINIMIZED,
+        EDITING_TEXT,
+        CLOSED
+    }
     enum UIStatus {
         INACTIVE,
         ACTIVE,
         READY,
         AWAITING_ENCRYPT,
         BUSY
-    }
-    enum UIWindowState {
-        SHOWING,
-        MINIMIZED,
-        EDITING_TEXT,
-        CLOSED
     }
     void setUIListener(UIListener uiListener);
     void giveMessage(Message msg);
@@ -30,5 +30,4 @@ public interface UIAdapter {
     UIStatus getUIStatus();
     void setUIStatus(UIStatus uistatus);
     void setUIWindowState_Minimized();
-
-}
+    }

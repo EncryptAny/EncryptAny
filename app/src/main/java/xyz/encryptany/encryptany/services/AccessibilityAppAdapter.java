@@ -48,11 +48,101 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private AppListener appListener = null;
 
     // Accessibility App Adapter Variables
-    private String textToFill = null; // stores text to fill after message has been sent.
     private CurrentWindow currentWindow = new CurrentWindow();
+    private FillState fillState = null;
+
+    private static class FillState {
+        private AppListener appListener;
+        private FillStateStatus prevState = FillStateStatus.NOT_FILLABLE;
+        private FillStateStatus state = FillStateStatus.NOT_FILLABLE;
+        private String textToFill = null; // stores text to fill after message has been sent.
+
+        public FillState(AppListener appListener) {
+            this.appListener = appListener;
+        }
+        private enum FillStateStatus {
+            NOT_FILLABLE,
+            READY,
+            TEXT_RECEIVED,
+            FILLED
+        }
+
+        // returns true if the new state was actually new. (and thus action should be taken)
+        private boolean advanceState(FillStateStatus acceptablePrevState, FillStateStatus newState, boolean strictTransition) {
+            // check the prev state for potential errors
+            boolean isValidPrevState = (acceptablePrevState == null) || (state == acceptablePrevState);
+            boolean isValidSameState = state == newState;
+            if (!isValidPrevState && !isValidSameState) {
+                if (strictTransition) {
+                    // On a strict transition, we throw if there is an issue
+                    throw new IllegalStateException("Erroneous state change: " + state.toString() + " to " + newState.toString());
+                } else {
+                    // on a non-strict transition, we simply do not perform the given transition.
+                    if (DEBUG) {
+                        Log.d(TAG, "State not changed from " + state.toString() + " to " + newState.toString() + " due to invalid state change");
+                    }
+                    return false;
+                }
+            }
+            if (DEBUG) {
+                Log.d(TAG, "State changed from " + state.toString() + " to " + newState.toString());
+            }
+
+            // Advance the state
+            prevState = state;
+            state = newState;
+            // returns true if this was a novel state change
+            return state != prevState;
+        }
+
+        public void reset() {
+            // prev state is null since we can advance from any state
+            if (advanceState(null, FillStateStatus.NOT_FILLABLE, true)) {
+                appListener.resetStatus();
+            }
+        }
+
+        public void readyToSend() {
+
+            if (advanceState(FillStateStatus.NOT_FILLABLE, FillStateStatus.READY, false)) {
+                appListener.readyForMessage();
+            }
+        }
+
+        public void textReceived(String textToFill) {
+            advanceState(FillStateStatus.READY, FillStateStatus.TEXT_RECEIVED, true);
+            this.textToFill = textToFill;
+        }
+
+        public String getTextToFill() {
+            if (state == FillStateStatus.TEXT_RECEIVED) {
+                return textToFill;
+            }
+            return null;
+        }
+
+        public void appFilled() {
+            advanceState(FillStateStatus.TEXT_RECEIVED, FillStateStatus.FILLED, true);
+        }
+
+        // returns the text that should be verified if it has been sent.
+        public String getTextToVerify() {
+            if (state == FillStateStatus.FILLED) {
+                return textToFill;
+            }
+            return null;
+        }
+
+        public void userSentMessage() {
+            if (advanceState(FillStateStatus.FILLED, FillStateStatus.READY, true)) {
+                appListener.messageSent();
+            }
+        }
 
 
-    static private class CurrentWindow {
+    }
+
+    private static class CurrentWindow {
         private AccessibilityEvent currTextViewEvent = null;
         private AccessibilityNodeInfo currTextViewNodeInfo = null;
         private final String currWindowActivity;
@@ -96,6 +186,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     }
 
     private static class AdapterMessage {
+        private transient String originalJSON = null;
         // these variables kept short to make the JSON reasonably sized.
         private String msg; //Full Message Text
         private String app; //Originating App
@@ -112,13 +203,14 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             // Garbage Data to be Replaced
             adapterMessage.app = appPkg;
             adapterMessage.op = uniqueID;
-            // TODO Determine what to do about garage data
+            // TODO Determine what to do about garbage data
             return adapterMessage;
         }
         public static AdapterMessage fromJson(String rawText) {
             AdapterMessage je;
             try {
                 je = gson.fromJson(rawText, AdapterMessage.class);
+                je.originalJSON = rawText;
             } catch (JsonSyntaxException e) {
                 je = null;
             }
@@ -142,6 +234,10 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 
         public String getAuthorID() {
             return op;
+        }
+
+        public String getOriginalJSON() {
+            return originalJSON;
         }
     }
 
@@ -181,13 +277,32 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        // see if the mediator has hooked us up with a reference!
+        if (appListener == null) {
+            if (DEBUG) {
+                Log.d(TAG, "no reference to appListener yet!");
+            }
+            return;
+        } else if (fillState == null) {
+            // init the fill state if this our first call with a valid appListener
+            if (DEBUG) {
+                Log.d(TAG, "Instantiating FillState!");
+            }
+            fillState = new FillState(appListener);
+        }
+
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) {
             return;
         }
 
+        CurrentWindow oldCurrentWindow = currentWindow;
         /* Update Current Package */
         currentWindow = refreshCurrentWindow(event, getPackageManager(), currentWindow);
+        // if the current window object has changed, reset the status of the encryption system.
+        if (currentWindow != oldCurrentWindow) {
+            fillState.reset();
+        }
         // if the currentWindow is null, we really can't do anything without causing exceptions...
         if(currentWindow == null) {
             return;
@@ -201,22 +316,42 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             return;
         }
         // check for any EditTexts...
-        if(event.getClassName().equals("android.widget.EditText")) {
+        boolean isEditText = event.getClassName().equals("android.widget.EditText");
+        if(isEditText) {
             if (DEBUG) {
                 Log.d(TAG, "Found EditText!");
             }
             currentWindow.setCurrTextView(event, source);
-            sendMessageIfApplicable();
-            // return since we don't want to count an edit text as something else that can be processed.
+            // set ourselves ready to send since we found an edit text!
+            fillState.readyToSend();
+        }
+
+        attemptMessageFill();
+
+        // if we are an edit text, after filling we return to make sure that no further processing
+        // is done on it.
+        if (isEditText) {
             return;
         }
 
+
         // now the fun stuff! We look for any messages in the given source
-        List <AdapterMessage> foundMessages = lookForMessages(source);
+        List<AdapterMessage> foundMessages = lookForMessages(source);
+        // we also obtain the message that we are going to verify is sent
+        String msgToVerify = fillState.getTextToVerify();
         for (AdapterMessage foundMessage : foundMessages) {
             // if the message is from ourselves, then we do NOT send it on through the system.
             if (foundMessage.getAuthorID().equals(myAuthorID())) {
+                if (msgToVerify != null && msgToVerify.equals(foundMessage.getOriginalJSON())) {
+                    fillState.userSentMessage();
+                }
+                if (DEBUG) {
+                    Log.d(TAG, "skipping msg since it matches our tag: " + foundMessage.getMessage());
+                }
                 continue;
+            }
+            if (DEBUG) {
+                Log.d(TAG, "Firing message to appListener: " + foundMessage.getMessage());
             }
             // otherwise, we do!
             String msg = foundMessage.getMessage();
@@ -267,6 +402,16 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
 
         return currentWindow;
+    }
+
+    private void attemptMessageFill() {
+        String textToFill = fillState.getTextToFill();
+        if (textToFill != null) {
+            boolean fillSuccessful = autofillMessage(currentWindow, textToFill);
+            if (fillSuccessful) {
+                fillState.appFilled();
+            }
+        }
     }
 
     static private boolean autofillMessage(CurrentWindow cw, String rawMessageTxt) {
@@ -325,36 +470,21 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     }
 
     @Override
-    public boolean sendMessage(Message message) {
+    public void sendMessage(Message message) {
         AdapterMessage adapterMessage = AdapterMessage.fromUIMessage(
                 message,
                 currentWindow.getCurrWindowPkg(),
                 myAuthorID()
         );
-        textToFill = adapterMessage.toJson();
+        fillState.textReceived(adapterMessage.toJson());
         if (DEBUG) {
-            Log.d(TAG, "setting textToFill. Ready to fill!");
+            Log.d(TAG, "Ready to fill!");
         }
-        //sendMessageIfApplicable();
-        // TODO determine if return type is useless
-        return false;
+        attemptMessageFill();
     }
 
     private static boolean isEmptyOrNull(String str) {
         return str == null || str.isEmpty();
-    }
-
-    private void sendMessageIfApplicable() {
-        if (isEmptyOrNull(textToFill)) {
-            return;
-        }
-        if (DEBUG) {
-            Log.d(TAG, "Valid Message to Fill. Attempting fill!");
-        }
-        boolean fillSuccessful = autofillMessage(currentWindow, textToFill);
-        if (fillSuccessful) {
-            textToFill = null;
-        }
     }
 
     @Override

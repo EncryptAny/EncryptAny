@@ -1,14 +1,9 @@
 package xyz.encryptany.encryptany.concrete;
 
-import java.util.Iterator;
-
-import java.io.File;
-
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import android.app.Activity;
 import android.content.ContentValues;
-import android.os.Bundle;
 
 import xyz.encryptany.encryptany.concrete.DataBase.MessageArchiverContract;
 import xyz.encryptany.encryptany.concrete.DataBase.MessageArchiverDbHelper;

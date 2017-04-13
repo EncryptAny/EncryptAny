@@ -2,7 +2,6 @@ package xyz.encryptany.encryptany.concrete.DataBase;
 
 import android.provider.BaseColumns;
 
-import net.sqlcipher.database.SQLiteDatabase;
 /**
  * Created by dakfu on 3/15/2017.
  */

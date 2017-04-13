@@ -54,23 +54,33 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     }
 
     @Override
-    public void getMessages() {
-
+    public void resetStatus() {
+        // TODO implement
     }
-    
+
+    @Override
+    public void readyForMessage() {
+        // TODO implement
+    }
+
+    @Override
+    public void messageSent() {
+        // TODO implement
+    }
+
     @Override
     public Cursor getOldMessages(String app){
         return archiverAdapter.retrieveAppMessages(app);
     }
 
     public void sendMessageFromUIAdapter(String messageString,String otherParticipant, String appSource){
+        // TODO Merge into app listener method
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
         currentMessageUnixDate = new Date().getTime();
         Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource,currentMessageUnixDate);
         encryptMessage(payload);
         archiveMessage(payload);
-
     }
 
     @Override

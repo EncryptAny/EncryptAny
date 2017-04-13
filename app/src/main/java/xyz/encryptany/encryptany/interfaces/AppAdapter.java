@@ -8,6 +8,6 @@ import xyz.encryptany.encryptany.listeners.AppListener;
 
 
 public interface AppAdapter {
-    boolean sendMessage(Message message);
+    void sendMessage(Message message);
     void setMessageUpdatedListener(AppListener listener);
 }
