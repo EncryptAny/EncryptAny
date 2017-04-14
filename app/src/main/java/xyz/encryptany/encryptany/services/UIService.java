@@ -694,6 +694,7 @@ public class UIService extends Subservice implements UIAdapter {
 
     @Override
     public void setUIWindowState_Minimized() {
+        chatheadView.setVisibility(View.VISIBLE);
         removeView.setVisibility(View.GONE);
         editTextView.setVisibility(View.GONE);
         overlayView.setVisibility(View.GONE);

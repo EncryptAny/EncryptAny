@@ -55,20 +55,28 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void resetStatus() {
-        // Prevent user from opening overlay
-        uiAdapter.setUIStatus(UIAdapter.UIStatus.INACTIVE);
-        // Minimize all overlay windows
-        uiAdapter.setUIWindowState_Minimized();
+            // Prevent user from opening overlay
+            uiAdapter.setUIStatus(UIAdapter.UIStatus.INACTIVE);
+            // Minimize all overlay windows
+            uiAdapter.setUIWindowState_Minimized();
     }
 
     @Override
     public void readyForMessage() {
+        // If user closed EncryptAny
+        // NOPE CHUCK TESTA
+        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.CLOSED) {
+            resetStatus();
+        }
         uiAdapter.setUIStatus(UIAdapter.UIStatus.ACTIVE);
     }
 
     @Override
     public void waitingForSend() {
-        // TODO here you go cory :D
+        // Freeze UI until it gets message sent
+        uiAdapter.setUIStatus(UIAdapter.UIStatus.AWAITING_ENCRYPT);
+        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED)
+            uiAdapter.setUIWindowState_Minimized();
     }
 
     @Override
