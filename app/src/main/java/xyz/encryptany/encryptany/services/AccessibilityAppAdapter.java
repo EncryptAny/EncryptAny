@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import xyz.encryptany.encryptany.Mediator;
+import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
@@ -212,9 +213,11 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             AdapterMessage je;
             try {
                 je = gson.fromJson(rawText, AdapterMessage.class);
-                je.originalJSON = rawText;
             } catch (JsonSyntaxException e) {
                 je = null;
+            }
+            if (je != null) {
+                je.originalJSON = rawText;
             }
             return je;
         }
@@ -266,7 +269,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     // This is where we want to put all of our initalization code
     @Override
     protected void onServiceConnected() {
-        Mediator m = new Mediator(this, uiService, new NoOpEncryptor(), new NoOpArchiver());
+        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new NoOpArchiver());
         super.onServiceConnected();
         uiService.start();
     }
@@ -324,7 +327,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
                 Log.d(TAG, "Found EditText!");
             }
             currentWindow.setCurrTextView(event, source);
-            // set ourselves ready to send since we found an edit text!
+            // set ourselves doneWaiting to send since we found an edit text!
             fillState.readyToSend();
         }
 
@@ -458,9 +461,15 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         if (ani == null) {
             return;
         }
+        // if we are an edit text, we ignore it
+        boolean isEditText = ani.getClassName().equals("android.widget.EditText");
+        if (isEditText) {
+            return;
+        }
         if (ani.getText() != null) {
             String txt = ani.getText().toString();
             AdapterMessage msg = AdapterMessage.fromJson(txt);
+            // TODO add date to msg so it doesn't pick up the same one
             if (msg != null) {
                 foundMessages.add(msg);
             }
@@ -482,7 +491,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         if (DEBUG) {
             Log.d(TAG, "Ready to fill!");
         }
-        attemptMessageFill();
+        // we don't attempt a message fill right away due to issues with
+        // the ui interfering with our fill.
     }
 
     private static boolean isEmptyOrNull(String str) {

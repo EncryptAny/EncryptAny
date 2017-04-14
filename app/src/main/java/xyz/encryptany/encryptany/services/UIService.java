@@ -704,27 +704,27 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     @Override
-    public void needTextBoxClick() {
+    public void waitForUserSend() {
         setUIStatus(UIStatus.AWAITING_CLICK);
     }
 
     @Override
-    public void deactivate() {
+    public void disable() {
         setUIStatus(UIStatus.INACTIVE);
     }
 
     @Override
-    public void activate() {
+    public void enable() {
         setUIStatus(UIStatus.ACTIVE);
     }
 
     @Override
-    public void waitUntilReady() {
+    public void waitForProcessing() {
         setUIStatus(UIStatus.BUSY);
     }
 
     @Override
-    public void ready() {
+    public void doneWaiting() {
         setUIStatus(UIStatus.READY);
     }
 

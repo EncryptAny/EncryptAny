@@ -2,22 +2,29 @@ package xyz.encryptany.encryptany.testing;
 
 import net.sqlcipher.Cursor;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import xyz.encryptany.encryptany.interfaces.Archiver;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
- * Created by max on 4/5/17.
+ * Created by max on 4/14/17.
  */
 
-public class NoOpArchiver implements Archiver {
+public class MapArchiver implements Archiver {
+
+    // Tree map due to potential sorting capabilities
+    Map<Long, Message> msgs = new TreeMap<>();
+
     @Override
     public void archiveMessage(Message message) {
-
+        msgs.put(message.getDate(), message);
     }
 
     @Override
     public boolean doesMessageExist(long dateOfMessage) {
-        return false;
+        return msgs.containsKey(dateOfMessage);
     }
 
     @Override

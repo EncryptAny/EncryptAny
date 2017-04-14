@@ -26,7 +26,7 @@ public class OTREncryptor implements Encryptor {
     //Listener for the mediator to send out the strings from the encryptor. (Kind of like a visitor but not really :()
     EncryptionListener encryptionListener;
 
-    public OTREncryptor(){
+    public OTREncryptor() {
 
 
         //The JCA provider is just the particular setting this version of OTR uses as suggested in the README and Example program
@@ -40,7 +40,7 @@ public class OTREncryptor implements Encryptor {
     //the symmetric keys. After the initial string is sent to a new subject the OTR framework is primed to receive
     //a new addition to its conversation keys hashtable and upon the next received message will return a
     //corresponding DH exchange message. Upon completeion we will call the mediator's listener signalling
-    //that the conversation is ready
+    //that the conversation is doneWaiting
     @Override
     public void initialization(Message message) {
 
@@ -56,12 +56,12 @@ public class OTREncryptor implements Encryptor {
         String app = message.getApp();
 
 
-        try{
+        try {
             //To be honest not sure what the purpose of these lines are
             //OTRT(type)L(length)V(value) as described in the framework files.
             //The readme says the tlvs can be null most of the time but I left these lines because of the example.
             OTRTLV[] tlvs = new OTRTLV[1];
-            tlvs[0]=new TLV(9, "TestTLV".getBytes());
+            tlvs[0] = new TLV(9, "TestTLV".getBytes());
 
             //(accountname[in this case just labeling it me as each app will be used by one user],protocol[the app we're using]
             //,recipient,message,tlvs,fragment policy [How we're splitting up the message], callback [ what the framework uses to send the messages among
@@ -75,13 +75,13 @@ public class OTREncryptor implements Encryptor {
     }
 
 
-    public void encryptMessage(Message message ) {
+    public void encryptMessage(Message message) {
         String recipient = message.getAuthor();
         String messageContent = message.getMessage();
         String app = message.getApp();
-        try{
+        try {
             OTRTLV[] tlvs = new OTRTLV[1];
-            tlvs[0]=new TLV(9, "TestTLV".getBytes());
+            tlvs[0] = new TLV(9, "TestTLV".getBytes());
             conversation.messageSending("me", app,
                     recipient, messageContent, tlvs, Policy.FRAGMENT_SEND_ALL, callback);
         } catch (Exception e) {
@@ -100,10 +100,10 @@ public class OTREncryptor implements Encryptor {
             StringTLV stlv = conversation.messageReceiving("me", app, sender, messageContent, callback);
             if (stlv != null) {
                 messageContent = stlv.msg;
-                encryptionListener.messageDecrypted(messageContent,sender,app);
+                encryptionListener.messageDecrypted(messageContent, sender, app);
                 //System.out.println("\033[31mFrom OTR:"+res.length()+":\033[0m"+res);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -121,24 +121,24 @@ public class OTREncryptor implements Encryptor {
         callback = new LocalCallback(encryptionListener);
     }
 }
-class LocalCallback implements OTRCallbacks{
+
+class LocalCallback implements OTRCallbacks {
 
     EncryptionListener encryptionListener;
 
 
-    public LocalCallback(EncryptionListener encryptionListener){
+    public LocalCallback(EncryptionListener encryptionListener) {
         this.encryptionListener = encryptionListener;
     }
+
     //THIS IS WHERE THE FRAMWORK SENDS MESSAGES OUT
-    public void injectMessage(String accName, String prot, String rec, String msg){
-        if(msg==null)return;
+    public void injectMessage(String accName, String prot, String rec, String msg) {
+        if (msg == null) return;
         System.out.println("\033[31mInjecting message to the recipient:"
-                +msg.length()+":\033[35m"+msg+"\033[0m");
+                + msg.length() + ":\033[35m" + msg + "\033[0m");
         //out.println(msg);
-       // out.flush();
+        // out.flush();
         encryptionListener.sendEncryptedMessage(msg, rec, prot);
-
-
     }
 
     public int getOtrPolicy(OTRContext conn) {
@@ -178,7 +178,7 @@ class LocalCallback implements OTRCallbacks{
     }
 
     public String errorMessage(OTRContext context, int err_code) {
-        if(err_code==OTRCallbacks.OTRL_ERRCODE_MSG_NOT_IN_PRIVATE){
+        if (err_code == OTRCallbacks.OTRL_ERRCODE_MSG_NOT_IN_PRIVATE) {
             return "You sent an encrypted message, but we finished" +
                     "the private conversation.";
         }
@@ -187,9 +187,9 @@ class LocalCallback implements OTRCallbacks{
 
     public void handleMsgEvent(int msg_event,
                                OTRContext context, String message) {
-        if(msg_event==OTRCallbacks.OTRL_MSGEVENT_CONNECTION_ENDED){
+        if (msg_event == OTRCallbacks.OTRL_MSGEVENT_CONNECTION_ENDED) {
             System.out.println("\033[31mThe private connection has already ended.\033[0m");
-        }else if(msg_event==OTRCallbacks.OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE){
+        } else if (msg_event == OTRCallbacks.OTRL_MSGEVENT_RCVDMSG_NOT_IN_PRIVATE) {
             System.out.println("\033[31mWe received an encrypted message, but we are not in" +
                     "encryption state.\033[0m");
         }
@@ -197,16 +197,16 @@ class LocalCallback implements OTRCallbacks{
 
     public void handleSmpEvent(int smpEvent,
                                OTRContext context, int progress_percent, String question) {
-        if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_ASK_FOR_SECRET){
+        if (smpEvent == OTRCallbacks.OTRL_SMPEVENT_ASK_FOR_SECRET) {
             System.out.println("\033[31mThe other side has initialized SMP." +
                     " Please respond with /rs.\033[0m");
-        }else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_ASK_FOR_ANSWER){
+        } else if (smpEvent == OTRCallbacks.OTRL_SMPEVENT_ASK_FOR_ANSWER) {
             System.out.println("\033[31mThe other side has initialized SMP, with question:" +
-                    question + ", "+
+                    question + ", " +
                     " Please respond with /rs.\033[0m");
-        }else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_SUCCESS){
+        } else if (smpEvent == OTRCallbacks.OTRL_SMPEVENT_SUCCESS) {
             System.out.println("\033[31mSMP succeeded.\033[0m");
-        }else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_FAILURE){
+        } else if (smpEvent == OTRCallbacks.OTRL_SMPEVENT_FAILURE) {
             System.out.println("\033[31mSMP failed.\033[0m");
         }
 

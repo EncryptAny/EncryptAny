@@ -50,7 +50,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate) {
-        // TODO implement
+        if (archiverAdapter.doesMessageExist(unixDate)) {
+            return;
+        }
         this.uiMessageDateToForward = unixDate;
         Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward);
         encryptionAdapter.decryptMessage(payload);
@@ -58,109 +60,108 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void resetStatus() {
-            // Prevent user from opening overlay
-            uiAdapter.deactivate();
-            // Minimize all overlay windows
-            uiAdapter.setUIWindowState_Minimized();
+        // Prevent user from opening overlay
+        uiAdapter.disable();
+        // Minimize all overlay windows
+        uiAdapter.setUIWindowState_Minimized();
+        uiMessageDateToForward = 0;
+        conversationReady = false;
     }
 
     @Override
     public void readyForMessage() {
-        // TODO Implement
         // If user closed EncryptAny
-        // NOPE CHUCK TESTA
-        if (uiAdapter.getUIWindowState() == UIAdapter.UIWindowState.CLOSED) {
-            uiAdapter.setUIWindowState_Minimized();
-        }
-        uiAdapter.activate();
+        // NOPE CHUCK TESTA (aka, reopen the encryptany icon)
+        showUIIfHidden();
+        uiAdapter.enable();
     }
 
     @Override
     public void waitingForSend() {
-        // TODO Implement
         // Freeze UI until it gets message sent
-        uiAdapter.waitUntilReady();
-        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED) {
-            uiAdapter.setUIWindowState_Minimized();
-        }
+        uiAdapter.waitForUserSend();
     }
 
     @Override
     public void messageSent() {
-        // TODO Implement
-        uiAdapter.ready();
+        // TODO fix this bug
+        conversationReady = true;
+        if (conversationReady) {
+            // means just a normal message, go back to green
+            uiAdapter.doneWaiting();
+        } else {
+            // means that we are probably (probz) still negotiating
+            uiAdapter.waitForProcessing();
+        }
     }
 
     /* ============== BEGIN UIListener Methods ============== */
 
     @Override
     public void sendMessageFromUIAdapter(String messageString, String otherParticipant, String appSource) {
+        // Set UI to WAIT until message encryption is done
+        uiAdapter.waitForProcessing();
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
         this.uiMessageDateToForward = (new Date()).getTime();
         Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource, uiMessageDateToForward);
-        // TODO set ui to WAIT
-        encryptionAdapter.encryptMessage(payload);
         archiveMessage(payload);
+        encryptionAdapter.encryptMessage(payload);
     }
 
     @Override
     public void startEncryptionProcess(String otherParticipant, String app) {
-        encryptionAdapter.initialization(messageFactory.createNewInitMessage(otherParticipant, app));
-        // TODO Set UI to WAIT
+        uiAdapter.waitForProcessing();
+        Message msg = messageFactory.createNewInitMessage(otherParticipant, app);
+        this.uiMessageDateToForward = msg.getDate();
+        encryptionAdapter.initialization(msg);
     }
 
     @Override
     public Cursor getOldMessages(String app) {
         // TODO see if this actually matters in anything and if so do something but if not oh well
-        //return archiverAdapter.retrieveAppMessages(app);
-        return null;
+        return archiverAdapter.retrieveAppMessages(app);
     }
 
     /* ============== BEGIN EncryptionListener Methods ============== */
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
+        uiAdapter.waitForUserSend();
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
-        // TODO Update UI to Reflect Waiting for User To Send
         appAdapter.sendMessage(message);
     }
 
     @Override
     public void handshakeComplete() {
-        // TODO Implement
-        uiAdapter.activate();
+        uiAdapter.doneWaiting();
         //UI update to allow conversation to begin
         conversationReady = true;
     }
 
     @Override
     public void messageDecrypted(String result, String otherParticipant, String appSource) {
-        // TODO Implement
         //display decrypted message to UI and store in archiver
         Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
-        displayReceivedMessage(payload);
+        uiAdapter.giveMessage(payload);
         archiveMessage(payload);
     }
 
     /* ============== BEGIN Private Helper Methods ============== */
 
+    private void showUIIfHidden() {
+        if (uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED) {
+            uiAdapter.setUIWindowState_Minimized();
+        }
+    }
 
 
     private void decryptMessage(Message message) {
         encryptionAdapter.decryptMessage(message);
     }
 
-    private boolean archiveMessage(Message message) {
+    private void archiveMessage(Message message) {
         archiverAdapter.archiveMessage(message);
-
-        return true;
-    }
-
-    private boolean displayReceivedMessage(Message message) {
-        //UI Adapter Call for displaying messages received from the app, depends on how Cory decides to implement his adapter
-        uiAdapter.giveMessage(message);
-        return true;
     }
 }

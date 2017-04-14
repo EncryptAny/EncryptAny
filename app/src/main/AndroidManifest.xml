@@ -18,10 +18,10 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".services.UIService"
-            android:enabled="true"
-            android:exported="true" />
+        <!--<service-->
+            <!--android:name=".services.UIService"-->
+            <!--android:enabled="true"-->
+            <!--android:exported="true" />-->
 
         <activity android:name=".Overlay" android:launchMode="singleTask" />
             <!--android:theme="@android:style/Theme.Translucent" />-->

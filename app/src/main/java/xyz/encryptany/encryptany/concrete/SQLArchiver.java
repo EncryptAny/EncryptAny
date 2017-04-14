@@ -42,6 +42,13 @@ public class SQLArchiver implements Archiver {
         //this cursor should be given to the message factory to contstruct the array of messages to be used in the interface adapter
         return cursor;
     }
+
+    @Override
+    public boolean doesMessageExist(long dateOfMessage) {
+        // TODO implement
+        return false;
+    }
+
     private void InitializeSQLCipher(Activity activity) {
         SQLiteDatabase.loadLibs(activity);
         //TODO: create user determined sql database password

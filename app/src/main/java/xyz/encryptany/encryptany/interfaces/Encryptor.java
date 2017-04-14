@@ -7,9 +7,9 @@ import xyz.encryptany.encryptany.listeners.EncryptionListener;
  */
 
 public interface Encryptor {
-    public void initialization(Message message);
-    public void encryptMessage(Message message);
-    public void decryptMessage(Message message);
-    public void setKeys();
-    public void setEncryptionListener(EncryptionListener listener);
+    void initialization(Message message);
+    void encryptMessage(Message message);
+    void decryptMessage(Message message);
+    void setKeys();
+    void setEncryptionListener(EncryptionListener listener);
 }

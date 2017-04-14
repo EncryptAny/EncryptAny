@@ -9,7 +9,7 @@ import java.util.Iterator;
  */
 
 public interface Archiver {
-    public void archiveMessage(Message message);
-    public Cursor retrieveAppMessages(String app);
-
+    void archiveMessage(Message message);
+    boolean doesMessageExist(long dateOfMessage);
+    Cursor retrieveAppMessages(String app);
 }
