@@ -84,8 +84,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void messageSent() {
-        // TODO fix this bug
-        conversationReady = true;
+//        // TODO fix this bug
+//        conversationReady = true;
         if (conversationReady) {
             // means just a normal message, go back to green
             uiAdapter.doneWaiting();
@@ -128,8 +128,14 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
         uiAdapter.waitForUserSend();
+        long dateToUse = this.uiMessageDateToForward;
+        if (dateToUse == 0) {
+            dateToUse = (new Date()).getTime();
+        } else {
+            this.uiMessageDateToForward = 0;
+        }
         //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse);
         appAdapter.sendMessage(message);
     }
 
