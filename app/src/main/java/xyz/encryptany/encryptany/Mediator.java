@@ -33,6 +33,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     private boolean conversationReady;
     private long uiMessageDateToForward;
     private long msgRecievedDateToForward;
+
+    private static final boolean ENFORE_DO_NOT_DUPE = false;
     private String doNotDuplicate = "";
 
 
@@ -140,7 +142,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
-        if (this.doNotDuplicate.equals(result)) {
+        if (ENFORE_DO_NOT_DUPE && this.doNotDuplicate.equals(result)) {
             Log.d(TAG, "reducing spam so that appAdapter doesn't get mad");
             return;
         }
@@ -159,9 +161,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void handshakeComplete() {
-        uiAdapter.doneWaiting();
         //UI update to allow conversation to begin
         conversationReady = true;
+        uiAdapter.doneWaiting();
     }
 
     @Override

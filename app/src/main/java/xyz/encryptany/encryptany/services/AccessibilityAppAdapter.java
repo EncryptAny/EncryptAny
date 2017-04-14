@@ -271,7 +271,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     @Override
     protected void onServiceConnected() {
         // TODO change away from testing encryptor
-        Mediator m = new Mediator(this, uiService, new NoOpEncryptor(), new MapArchiver());
+        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new MapArchiver());
         super.onServiceConnected();
         uiService.start();
     }
