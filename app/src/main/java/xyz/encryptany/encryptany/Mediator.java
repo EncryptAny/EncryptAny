@@ -2,7 +2,9 @@ package xyz.encryptany.encryptany;
 
 import net.sqlcipher.Cursor;
 
+import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.Queue;
 
 import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
@@ -26,9 +28,10 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     Archiver archiverAdapter;
     MessageFactory messageFactory;
 
-    boolean conversationReady;
-
-    long uiMessageDateToForward;
+    private boolean conversationReady;
+    private boolean appAdapterBusy;
+    private long uiMessageDateToForward;
+    private Queue<Message> encryptedMsgQueue = new ArrayDeque<>();
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -38,6 +41,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         messageFactory = new MessageFactory();
 
         conversationReady = false;
+        appAdapterBusy = false;
         this.encryptionAdapter.setEncryptionListener(this);
         appAdapter.setMessageUpdatedListener(this);
         uiAdapter.setUIListener(this);
@@ -66,6 +70,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiAdapter.setUIWindowState_Minimized();
         uiMessageDateToForward = 0;
         conversationReady = false;
+        appAdapterBusy = false;
+        encryptedMsgQueue.clear();
     }
 
     @Override
@@ -93,20 +99,22 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
             // means that we are probably (probz) still negotiating
             uiAdapter.waitForProcessing();
         }
+        appAdapterBusy = false;
+        sendFromQueue();
     }
 
     /* ============== BEGIN UIListener Methods ============== */
 
     @Override
     public void sendMessageFromUIAdapter(String messageString, String otherParticipant, String appSource) {
-        // Set UI to WAIT until message encryption is done
-        uiAdapter.waitForProcessing();
-        //send message to encryption adapter and then to archiver and app adapter
+        if (!conversationReady) {
+            startEncryptionProcess(otherParticipant, appSource);
+            return;
+        }
         //generate message package to send to encryption adapter
-        this.uiMessageDateToForward = (new Date()).getTime();
-        Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource, uiMessageDateToForward);
-        archiveMessage(payload);
-        encryptionAdapter.encryptMessage(payload);
+        Message message = messageFactory.createNewMessage(messageString, otherParticipant, appSource);
+        archiveMessage(message);
+        encryptionAdapter.encryptMessage(message);
     }
 
     @Override
@@ -127,7 +135,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
-        uiAdapter.waitForUserSend();
         long dateToUse = this.uiMessageDateToForward;
         if (dateToUse == 0) {
             dateToUse = (new Date()).getTime();
@@ -136,7 +143,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         }
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse);
-        appAdapter.sendMessage(message);
+        encryptedMsgQueue.add(message);
+        sendFromQueue();
     }
 
     @Override
@@ -160,6 +168,22 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if (uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED) {
             uiAdapter.setUIWindowState_Minimized();
         }
+    }
+
+    private void sendFromQueue() {
+        if (appAdapterBusy) {
+            return;
+        }
+
+        // Set UI to WAIT until message encryption is done
+        uiAdapter.waitForProcessing();
+        if (!encryptedMsgQueue.isEmpty()) {
+            Message toProcess = encryptedMsgQueue.remove();
+            appAdapterBusy = true;
+            appAdapter.sendMessage(toProcess);
+        }
+
+        //send message to encryption adapter and then to archiver and app adapter
     }
 
 
