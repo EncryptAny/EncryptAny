@@ -303,7 +303,6 @@ public class UIService extends Subservice implements UIAdapter {
                         editTextView.setVisibility(View.GONE);
                         setUIWindowState_Minimized();
                         mAdapter.addMessage(newMessage);
-                        setUIStatus(UIStatus.BUSY);
                         uiListener.sendMessageFromUIAdapter(userTxt, authorName, activeApp);
                     }
                 }
@@ -622,14 +621,12 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void giveMessage(Message msg) {
         mAdapter.addMessage(msg);
-        setUIStatus(UIStatus.READY);
         showMsg("Message Received.");
     }
 
     @Override
     public void updateMessages(Message[] msgs) {
         mAdapter.updateMessages(msgs);
-        setUIStatus(UIStatus.READY);
         showMsg("Conversation Retrieved.");
     }
 
