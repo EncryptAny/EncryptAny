@@ -64,6 +64,11 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     }
 
     @Override
+    public void waitingForSend() {
+        // TODO here you go cory :D
+    }
+
+    @Override
     public void messageSent() {
         // TODO implement
     }
@@ -93,10 +98,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         encryptionAdapter.encryptMessage(message);
         return false;
     }
-    private boolean decryptMessage(Message message){
 
+    private void decryptMessage(Message message){
         encryptionAdapter.decryptMessage(message);
-        return true;
     }
 
     private boolean archiveMessage(Message message){

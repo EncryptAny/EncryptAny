@@ -10,6 +10,8 @@ public interface AppListener {
     void resetStatus();
     // called usually when the given app has a valid textEdit to send
     void readyForMessage();
+    // called when waiting for the user to send the message
+    void waitingForSend();
     // called once the message appears once again in the UI
     void messageSent();
 }

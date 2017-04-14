@@ -122,7 +122,9 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
 
         public void appFilled() {
-            advanceState(FillStateStatus.TEXT_RECEIVED, FillStateStatus.FILLED, true);
+            if(advanceState(FillStateStatus.TEXT_RECEIVED, FillStateStatus.FILLED, true)) {
+                appListener.waitingForSend();
+            }
         }
 
         // returns the text that should be verified if it has been sent.
