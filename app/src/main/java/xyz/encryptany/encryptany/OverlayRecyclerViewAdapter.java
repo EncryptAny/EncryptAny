@@ -1,6 +1,7 @@
 package xyz.encryptany.encryptany;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import xyz.encryptany.encryptany.interfaces.Message;
 public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecyclerViewAdapter.ViewHolder> {
     private ArrayList<Message> mMsgs;
     private Format format;
+    private static final String tag = "RecyclerViewAdapter";
 
     public OverlayRecyclerViewAdapter(ArrayList<Message> msg) {
 
@@ -48,6 +50,7 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
 
     @Override
     public void onBindViewHolder(OverlayRecyclerViewAdapter.ViewHolder holder, int position) {
+        Log.d(tag,"OnBindViewholder got text " + mMsgs.get(position).getMessage());
         holder.tvMsgSender.setText(mMsgs.get(position).getAuthor());
         holder.tvMsgTimestamp.setText(longToTS(mMsgs.get(position).getDate()));
         holder.tvMsgContent.setText(mMsgs.get(position).getMessage());
@@ -59,6 +62,7 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
     }
 
     public void addMessage(Message msg) {
+        Log.d(tag,"Adding message with text " + msg.getMessage());
         if (mMsgs.size() == 0)
             mMsgs.add(0, msg);
         else

@@ -32,5 +32,6 @@
         android:id="@+id/overlay_msg_content"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
+        android:textColor="@color/colorPrimaryDark"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 </RelativeLayout>
