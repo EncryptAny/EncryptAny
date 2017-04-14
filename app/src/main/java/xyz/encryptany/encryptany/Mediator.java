@@ -30,9 +30,10 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     Archiver archiverAdapter;
     MessageFactory messageFactory;
 
-    boolean conversationReady;
-    long uiMessageDateToForward;
-    String doNotDuplicate = "";
+    private boolean conversationReady;
+    private long uiMessageDateToForward;
+    private long msgRecievedDateToForward;
+    private String doNotDuplicate = "";
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -48,6 +49,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         encryptionAdapter.setEncryptionListener(this);
 
         uiMessageDateToForward = 0;
+        msgRecievedDateToForward = 0;
     }
 
     /* ============== BEGIN AppListener Methods ============== */
@@ -57,7 +59,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if (archiverAdapter.doesMessageExist(unixDate)) {
             return;
         }
-        this.uiMessageDateToForward = unixDate;
+        this.msgRecievedDateToForward = unixDate;
         Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward);
         encryptionAdapter.decryptMessage(payload);
     }
@@ -111,7 +113,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiAdapter.waitForProcessing();
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
-        this.uiMessageDateToForward = (new Date()).getTime();
+        long time = (new Date()).getTime();
+        this.uiMessageDateToForward = time;
         Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource, uiMessageDateToForward);
         archiveMessage(payload);
         encryptionAdapter.encryptMessage(payload);
@@ -144,7 +147,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiAdapter.waitForUserSend();
         long dateToUse = this.uiMessageDateToForward;
         if (dateToUse == 0) {
-            throw new IllegalStateException("Date is zero when it should not be.");
+            dateToUse = getNow();
+        } else {
+            this.uiMessageDateToForward = 0;
         }
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse);
@@ -161,7 +166,12 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void messageDecrypted(String result, String otherParticipant, String appSource) {
         //display decrypted message to UI and store in archiver
-        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
+        if (this.msgRecievedDateToForward == 0) {
+            throw new IllegalStateException("message is zero on decrypt, which in theory is impossible");
+        } else {
+            this.msgRecievedDateToForward = 0;
+        }
+        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward);
         uiAdapter.giveMessage(payload);
         archiveMessage(payload);
     }
@@ -172,6 +182,11 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if (uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED) {
             uiAdapter.setUIWindowState_Minimized();
         }
+    }
+
+    private static long getNow() {
+        long time = (new Date()).getTime();
+        return time;
     }
 
 
