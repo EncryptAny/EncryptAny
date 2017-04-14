@@ -695,6 +695,7 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void disable() {
         setUIStatus(UIStatus.INACTIVE);
+        mAdapter.clearMessages();
     }
 
     @Override
