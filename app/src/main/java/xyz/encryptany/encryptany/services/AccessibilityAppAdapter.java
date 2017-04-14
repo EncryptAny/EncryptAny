@@ -270,7 +270,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     // This is where we want to put all of our initalization code
     @Override
     protected void onServiceConnected() {
-        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new MapArchiver());
+        // TODO change away from testing encryptor
+        Mediator m = new Mediator(this, uiService, new NoOpEncryptor(), new MapArchiver());
         super.onServiceConnected();
         uiService.start();
     }

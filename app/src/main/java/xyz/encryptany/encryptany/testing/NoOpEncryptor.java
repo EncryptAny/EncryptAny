@@ -14,7 +14,7 @@ public class NoOpEncryptor implements Encryptor {
 
     @Override
     public void initialization(Message message) {
-
+        el.handshakeComplete();
     }
 
     @Override

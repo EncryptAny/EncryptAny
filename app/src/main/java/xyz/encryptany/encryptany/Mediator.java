@@ -35,6 +35,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     private long msgRecievedDateToForward;
     private String doNotDuplicate = "";
 
+
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
         this.uiAdapter = uiAdapter;
