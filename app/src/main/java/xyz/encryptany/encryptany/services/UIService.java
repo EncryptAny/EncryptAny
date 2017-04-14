@@ -304,7 +304,12 @@ public class UIService extends Subservice implements UIAdapter {
                         setUIWindowState_Minimized();
                         mAdapter.addMessage(newMessage);
                         setUIStatus(UIStatus.BUSY);
-                        uiListener.sendMessageFromUIAdapter(userTxt, authorName, activeApp);
+                        if(mAdapter.getItemCount() == 0) {
+                            uiListener.sendMessageFromUIAdapter(userTxt, authorName, activeApp);
+                        }
+                        else {
+                            uiListener.startEncryptionProcess(authorName,activeApp);
+                        }
                     }
                 }
         );
