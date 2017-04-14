@@ -17,7 +17,7 @@ public interface UIAdapter {
         INACTIVE,
         ACTIVE,
         READY,
-        AWAITING_ENCRYPT,
+        AWAITING_CLICK,
         BUSY
     }
     void setUIListener(UIListener uiListener);
@@ -28,6 +28,11 @@ public interface UIAdapter {
     void setRecipientName(String recipient_name);
     UIWindowState getUIWindowState();
     UIStatus getUIStatus();
-    void setUIStatus(UIStatus uistatus);
+    void needTextBoxClick();
+    void deactivate();
+    void activate();
+    void waitUntilReady();
+    void ready();
+
     void setUIWindowState_Minimized();
     }

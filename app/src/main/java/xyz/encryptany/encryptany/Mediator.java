@@ -56,7 +56,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void resetStatus() {
             // Prevent user from opening overlay
-            uiAdapter.setUIStatus(UIAdapter.UIStatus.INACTIVE);
+            uiAdapter.deactivate();
             // Minimize all overlay windows
             uiAdapter.setUIWindowState_Minimized();
     }
@@ -68,20 +68,20 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.CLOSED) {
             resetStatus();
         }
-        uiAdapter.setUIStatus(UIAdapter.UIStatus.ACTIVE);
+        uiAdapter.activate();
     }
 
     @Override
     public void waitingForSend() {
         // Freeze UI until it gets message sent
-        uiAdapter.setUIStatus(UIAdapter.UIStatus.AWAITING_ENCRYPT);
+        uiAdapter.waitUntilReady();
         if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED)
             uiAdapter.setUIWindowState_Minimized();
     }
 
     @Override
     public void messageSent() {
-        uiAdapter.setUIStatus(UIAdapter.UIStatus.READY);
+        uiAdapter.ready();
     }
 
     @Override

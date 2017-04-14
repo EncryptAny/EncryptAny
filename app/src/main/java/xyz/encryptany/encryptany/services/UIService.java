@@ -214,7 +214,7 @@ public class UIService extends Subservice implements UIAdapter {
                         handler_longClick.removeCallbacks(runnable_longClick);
 
                         if(inBounded){
-                            if (uiStatus != UIStatus.BUSY) {
+                            if (uiStatus != UIStatus.BUSY && uiStatus != UIStatus.AWAITING_CLICK) {
                                 setUIWindowState_Minimized();
                                 chatheadView.setVisibility(View.GONE);
                                 inBounded = false;
@@ -295,18 +295,21 @@ public class UIService extends Subservice implements UIAdapter {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // Grab text first
-                        setUIStatus(UIStatus.AWAITING_ENCRYPT);
                         String userTxt = overlayEditText.getText().toString();
-                        newMessage = messageFactory.createNewMessage(userTxt,authorName,activeApp);
-                        // Start encryption process?
+                        newMessage = messageFactory.createNewMessage(userTxt, authorName, activeApp);
                         editTextView.clearFocus();
                         overlayEditText.setText("");
                         // Have to do this, no other way
                         editTextView.setVisibility(View.GONE);
                         setUIWindowState_Minimized();
                         mAdapter.addMessage(newMessage);
-                        uiListener.sendMessageFromUIAdapter(userTxt,authorName,activeApp);
+                        setUIStatus(UIStatus.BUSY);
+                        if(mAdapter.getItemCount() == 0) {
+                            uiListener.sendMessageFromUIAdapter(userTxt, authorName, activeApp);
+                        }
+                        else {
+                            uiListener.startEncryptionProcess(authorName,activeApp);
+                        }
                     }
                 }
         );
@@ -388,7 +391,6 @@ public class UIService extends Subservice implements UIAdapter {
             }
         });
 
-        // Can start this as inactive if app adapter correctly signals presence of compatibile apps
         setUIStatus(UIStatus.INACTIVE);
         setUIWindowState_Minimized();
 
@@ -433,14 +435,16 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     private void chathead_click(){
-        if(uiWindowState == UIWindowState.SHOWING){
-            setUIWindowState_Minimized();
-        }else{
-            if(uiWindowState == uiWindowState.MINIMIZED && uiStatus != UIStatus.INACTIVE){
-                overlayView.setVisibility(View.VISIBLE);
-                uiWindowState = UIWindowState.SHOWING;
-                if (uiStatus == UIStatus.READY)
-                    setUIStatus(UIStatus.ACTIVE);
+        if(uiStatus == UIStatus.READY || uiStatus == UIStatus.ACTIVE) {
+            if (uiWindowState == UIWindowState.SHOWING) {
+                setUIWindowState_Minimized();
+            } else {
+                if (uiWindowState == uiWindowState.MINIMIZED) {
+                    overlayView.setVisibility(View.VISIBLE);
+                    uiWindowState = UIWindowState.SHOWING;
+                    if (uiStatus == UIStatus.READY)
+                        setUIStatus(UIStatus.ACTIVE);
+                }
             }
         }
 
@@ -498,7 +502,6 @@ public class UIService extends Subservice implements UIAdapter {
                 txt1.setText("");
                 txtView.setVisibility(View.GONE);
             }
-            uiWindowState = UIWindowState.MINIMIZED;
         }
     };
 
@@ -660,36 +663,69 @@ public class UIService extends Subservice implements UIAdapter {
         return this.uiStatus;
     }
 
-    @Override
-    public void setUIStatus(UIStatus uistatus) {
+    private void setUIStatus(UIStatus uistatus) {
         switch(uistatus)
         {
             case ACTIVE:
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
                 chatheadImg.setAlpha((float)1.0);
                 break;
-            case AWAITING_ENCRYPT:
-                showMsg("Encrypting Message");
+            case AWAITING_CLICK:
+                showMsg("Please click the text box");
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_yellow);
                 chatheadImg.setAlpha((float)1.0);
                 break;
             case BUSY:
-                showMsg("Performing Operations");
+                showMsg("Performing operations");
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_red);
                 chatheadImg.setAlpha((float)1.0);
                 break;
             case INACTIVE:
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_blue);
                 chatheadImg.setAlpha((float)0.6);
+                newMessage = null;
                 break;
             case READY:
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_green);
                 chatheadImg.setAlpha((float)1.0);
+                if (this.uiStatus == UIStatus.BUSY)
+                { // Previous state was busy
+                    if(newMessage != null) // User sent a message to initiate handshake
+                        // Resend the unsent message
+                        uiListener.sendMessageFromUIAdapter(newMessage.getMessage(), authorName, newMessage.getApp());
+                        // Back to busy status
+                        uistatus = UIStatus.BUSY;
+                }
                 break;
             default:
                 break;
         }
         this.uiStatus = uistatus;
+    }
+
+    @Override
+    public void needTextBoxClick() {
+        setUIStatus(UIStatus.AWAITING_CLICK);
+    }
+
+    @Override
+    public void deactivate() {
+        setUIStatus(UIStatus.INACTIVE);
+    }
+
+    @Override
+    public void activate() {
+        setUIStatus(UIStatus.ACTIVE);
+    }
+
+    @Override
+    public void waitUntilReady() {
+        setUIStatus(UIStatus.BUSY);
+    }
+
+    @Override
+    public void ready() {
+        setUIStatus(UIStatus.READY);
     }
 
     @Override
