@@ -736,4 +736,9 @@ public class UIService extends Subservice implements UIAdapter {
         overlayView.setVisibility(View.GONE);
         this.uiWindowState = UIWindowState.MINIMIZED;
     }
+
+    @Override
+    public void setUIWindowState_Showing() {
+
+    }
 }

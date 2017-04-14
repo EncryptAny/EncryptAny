@@ -28,29 +28,32 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     boolean conversationReady;
 
-    long currentMessageUnixDate;
+    long uiMessageDateToForward;
 
-    public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter){
+    public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
         this.uiAdapter = uiAdapter;
         this.encryptionAdapter = encryptionAdapter;
         this.archiverAdapter = archiverAdapter;
         messageFactory = new MessageFactory();
 
-        conversationReady =false;
+        conversationReady = false;
         this.encryptionAdapter.setEncryptionListener(this);
         appAdapter.setMessageUpdatedListener(this);
         uiAdapter.setUIListener(this);
         encryptionAdapter.setEncryptionListener(this);
 
-        currentMessageUnixDate = 0;
+        uiMessageDateToForward = 0;
     }
+
+    /* ============== BEGIN AppListener Methods ============== */
 
     @Override
     public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate) {
         // TODO implement
-        currentMessageUnixDate = unixDate;
-        receiveMessageFromApp(messageContent,otherParticipant,application);
+        this.uiMessageDateToForward = unixDate;
+        Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward);
+        encryptionAdapter.decryptMessage(payload);
     }
 
     @Override
@@ -63,101 +66,101 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void readyForMessage() {
+        // TODO Implement
         // If user closed EncryptAny
         // NOPE CHUCK TESTA
-        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.CLOSED) {
-            resetStatus();
+        if (uiAdapter.getUIWindowState() == UIAdapter.UIWindowState.CLOSED) {
+            uiAdapter.setUIWindowState_Minimized();
         }
         uiAdapter.activate();
     }
 
     @Override
     public void waitingForSend() {
+        // TODO Implement
         // Freeze UI until it gets message sent
         uiAdapter.waitUntilReady();
-        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED)
+        if(uiAdapter.getUIWindowState() != UIAdapter.UIWindowState.MINIMIZED) {
             uiAdapter.setUIWindowState_Minimized();
+        }
     }
 
     @Override
     public void messageSent() {
+        // TODO Implement
         uiAdapter.ready();
     }
 
-    @Override
-    public Cursor getOldMessages(String app){
-        return archiverAdapter.retrieveAppMessages(app);
-    }
+    /* ============== BEGIN UIListener Methods ============== */
 
-    public void sendMessageFromUIAdapter(String messageString,String otherParticipant, String appSource){
-        // TODO Merge into app listener method
+    @Override
+    public void sendMessageFromUIAdapter(String messageString, String otherParticipant, String appSource) {
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
-        currentMessageUnixDate = new Date().getTime();
-        Message payload = messageFactory.createNewMessage(messageString,otherParticipant,appSource,currentMessageUnixDate);
-        encryptMessage(payload);
+        this.uiMessageDateToForward = (new Date()).getTime();
+        Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource, uiMessageDateToForward);
+        // TODO set ui to WAIT
+        encryptionAdapter.encryptMessage(payload);
         archiveMessage(payload);
     }
 
     @Override
     public void startEncryptionProcess(String otherParticipant, String app) {
-        encryptionAdapter.initialization(messageFactory.createNewInitMessage(otherParticipant,app));
+        encryptionAdapter.initialization(messageFactory.createNewInitMessage(otherParticipant, app));
+        // TODO Set UI to WAIT
     }
 
-    private boolean encryptMessage(Message message){
-        //send message to encryption adapter
-        encryptionAdapter.encryptMessage(message);
-        return false;
+    @Override
+    public Cursor getOldMessages(String app) {
+        // TODO see if this actually matters in anything and if so do something but if not oh well
+        //return archiverAdapter.retrieveAppMessages(app);
+        return null;
     }
 
-    private void decryptMessage(Message message){
+    /* ============== BEGIN EncryptionListener Methods ============== */
+
+    @Override
+    public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
+        //app adapter call with new message from the encrypted string
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
+        // TODO Update UI to Reflect Waiting for User To Send
+        appAdapter.sendMessage(message);
+    }
+
+    @Override
+    public void handshakeComplete() {
+        // TODO Implement
+        uiAdapter.activate();
+        //UI update to allow conversation to begin
+        conversationReady = true;
+    }
+
+    @Override
+    public void messageDecrypted(String result, String otherParticipant, String appSource) {
+        // TODO Implement
+        //display decrypted message to UI and store in archiver
+        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, uiMessageDateToForward);
+        displayReceivedMessage(payload);
+        archiveMessage(payload);
+    }
+
+    /* ============== BEGIN Private Helper Methods ============== */
+
+
+
+    private void decryptMessage(Message message) {
         encryptionAdapter.decryptMessage(message);
     }
 
-    private boolean archiveMessage(Message message){
+    private boolean archiveMessage(Message message) {
         archiverAdapter.archiveMessage(message);
 
         return true;
     }
 
-    private boolean displayReceivedMessage(Message message){
+    private boolean displayReceivedMessage(Message message) {
         //UI Adapter Call for displaying messages received from the app, depends on how Cory decides to implement his adapter
         uiAdapter.giveMessage(message);
         return true;
-    }
-
-    private boolean receiveMessageFromApp(String result,String otherParticipant, String appSource){
-        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource,currentMessageUnixDate);
-        encryptionAdapter.decryptMessage(payload);
-
-        return false;
-    }
-
-    private boolean sendMessageToApp(Message message){
-        //send the message package to the app adapter to deal with
-        //also call displaySentMessage I guess?
-        appAdapter.sendMessage(message);
-        return false;
-    }
-
-    @Override
-    public void sendingMessage(String result, String otherParticipant, String appSource) {
-        //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource,currentMessageUnixDate);
-        sendMessageToApp(message);
-
-    }
-
-    @Override
-    public void conversationReady() {
-        //UI update to allow conversation to begin
-        conversationReady = true;
-    }
-    @Override
-    public void messageDecrypted(String result,String otherParticipant, String appSource){
-        //display decrypted message to UI and store in archiver
-        Message payload = messageFactory.createNewMessage(result,otherParticipant,appSource,currentMessageUnixDate);
-        displayReceivedMessage(payload);
-        archiveMessage(payload);
     }
 }

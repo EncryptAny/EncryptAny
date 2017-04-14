@@ -136,7 +136,7 @@ class LocalCallback implements OTRCallbacks{
                 +msg.length()+":\033[35m"+msg+"\033[0m");
         //out.println(msg);
        // out.flush();
-        encryptionListener.sendingMessage(msg, rec, prot);
+        encryptionListener.sendEncryptedMessage(msg, rec, prot);
 
 
     }
@@ -147,7 +147,7 @@ class LocalCallback implements OTRCallbacks{
 
     public void goneSecure(OTRContext context) {
         System.out.println("\033[31mAKE succeeded\033[0m");
-        encryptionListener.conversationReady();
+        encryptionListener.handshakeComplete();
     }
 
     public int isLoggedIn(String accountname, String protocol,

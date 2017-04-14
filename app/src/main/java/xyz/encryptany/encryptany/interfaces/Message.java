@@ -7,8 +7,8 @@ import java.util.Date;
  */
 
 public interface Message {
-    public String getMessage();
-    public String getAuthor();
-    public String getApp();
-    public long getDate();
+    String getMessage();
+    String getAuthor();
+    String getApp();
+    long getDate();
 }

@@ -5,9 +5,8 @@ package xyz.encryptany.encryptany.listeners;
  */
 
 public interface EncryptionListener {
-    // sendingMessage is how the ecryption adapter sends encrypted messages and key exchanges via callbackd
-    void sendingMessage(String msg, String otherParticipant, String appSource);
-    void conversationReady();
+    // sendEncryptedMessage is how the ecryption adapter sends encrypted messages and key exchanges via callbackd
+    void sendEncryptedMessage(String msg, String otherParticipant, String appSource);
+    void handshakeComplete();
     void messageDecrypted(String result,String otherParticipant, String appSource);
-
 }

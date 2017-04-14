@@ -35,4 +35,5 @@ public interface UIAdapter {
     void ready();
 
     void setUIWindowState_Minimized();
+    void setUIWindowState_Showing();
     }
