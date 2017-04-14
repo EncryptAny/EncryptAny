@@ -70,6 +70,12 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
         super.notifyDataSetChanged();
     }
 
+    public void clearMessages()
+    {
+        this.mMsgs.clear();
+        super.notifyDataSetChanged();
+    }
+
     public void updateMessages(Message[] msg) {
         this.mMsgs.clear();
         for (int i = 0; i < msg.length; ++i)
