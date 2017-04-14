@@ -683,14 +683,6 @@ public class UIService extends Subservice implements UIAdapter {
             case READY:
                 chatheadImg.setImageResource(R.drawable.encryptany_logo_green);
                 chatheadImg.setAlpha((float)1.0);
-                if (this.uiStatus == UIStatus.BUSY)
-                { // Previous state was busy
-                    if(newMessage != null) // User sent a message to initiate handshake
-                        // Resend the unsent message
-                        uiListener.sendMessageFromUIAdapter(newMessage.getMessage(), authorName, newMessage.getApp());
-                        // Back to busy status
-                        uistatus = UIStatus.BUSY;
-                }
                 break;
             default:
                 break;
