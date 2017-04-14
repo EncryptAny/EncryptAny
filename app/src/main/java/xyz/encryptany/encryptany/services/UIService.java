@@ -439,6 +439,8 @@ public class UIService extends Subservice implements UIAdapter {
             if(uiWindowState == uiWindowState.MINIMIZED && uiStatus != UIStatus.INACTIVE){
                 overlayView.setVisibility(View.VISIBLE);
                 uiWindowState = UIWindowState.SHOWING;
+                if (uiStatus == UIStatus.READY)
+                    setUIStatus(UIStatus.ACTIVE);
             }
         }
 

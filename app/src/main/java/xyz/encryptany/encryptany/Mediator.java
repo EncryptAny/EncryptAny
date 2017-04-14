@@ -55,12 +55,15 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void resetStatus() {
-        // TODO implement
+        // Prevent user from opening overlay
+        uiAdapter.setUIStatus(UIAdapter.UIStatus.INACTIVE);
+        // Minimize all overlay windows
+        uiAdapter.setUIWindowState_Minimized();
     }
 
     @Override
     public void readyForMessage() {
-        // TODO implement
+        uiAdapter.setUIStatus(UIAdapter.UIStatus.ACTIVE);
     }
 
     @Override
@@ -70,7 +73,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void messageSent() {
-        // TODO implement
+        uiAdapter.setUIStatus(UIAdapter.UIStatus.READY);
     }
 
     @Override
