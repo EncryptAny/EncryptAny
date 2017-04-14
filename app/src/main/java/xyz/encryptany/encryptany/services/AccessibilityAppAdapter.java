@@ -29,6 +29,7 @@ import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
+import xyz.encryptany.encryptany.testing.MapArchiver;
 import xyz.encryptany.encryptany.testing.NoOpArchiver;
 import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
@@ -43,7 +44,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     // App Adapter helper variables
     private static boolean DEBUG = true;
     private static final String TAG = "AccessibilityAppAdapter";
-    private static final int DATE_RADIX = 36;
+    private static final int DATE_RADIX = 10;
 
 
     private AppListener appListener = null;
@@ -269,7 +270,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     // This is where we want to put all of our initalization code
     @Override
     protected void onServiceConnected() {
-        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new NoOpArchiver());
+        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new MapArchiver());
         super.onServiceConnected();
         uiService.start();
     }

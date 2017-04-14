@@ -1,5 +1,7 @@
 package xyz.encryptany.encryptany;
 
+import android.util.Log;
+
 import net.sqlcipher.Cursor;
 
 import java.util.Date;
@@ -20,6 +22,8 @@ import xyz.encryptany.encryptany.listeners.UIListener;
 
 public class Mediator implements AppListener, EncryptionListener, UIListener {
 
+    private static final String TAG = "Mediator";
+
     AppAdapter appAdapter;
     UIAdapter uiAdapter;
     Encryptor encryptionAdapter;
@@ -27,8 +31,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     MessageFactory messageFactory;
 
     boolean conversationReady;
-
     long uiMessageDateToForward;
+    String doNotDuplicate = "";
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -99,6 +103,10 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendMessageFromUIAdapter(String messageString, String otherParticipant, String appSource) {
+        if (!conversationReady) {
+            startEncryptionProcess(otherParticipant, appSource);
+            return;
+        }
         // Set UI to WAIT until message encryption is done
         uiAdapter.waitForProcessing();
         //send message to encryption adapter and then to archiver and app adapter
@@ -114,6 +122,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiAdapter.waitForProcessing();
         Message msg = messageFactory.createNewInitMessage(otherParticipant, app);
         this.uiMessageDateToForward = msg.getDate();
+        archiveMessage(msg);
         encryptionAdapter.initialization(msg);
     }
 
@@ -127,12 +136,15 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
+        if (this.doNotDuplicate.equals(result)) {
+            Log.d(TAG, "reducing spam so that appAdapter doesn't get mad");
+            return;
+        }
+        this.doNotDuplicate = result;
         uiAdapter.waitForUserSend();
         long dateToUse = this.uiMessageDateToForward;
         if (dateToUse == 0) {
-            dateToUse = (new Date()).getTime();
-        } else {
-            this.uiMessageDateToForward = 0;
+            throw new IllegalStateException("Date is zero when it should not be.");
         }
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse);

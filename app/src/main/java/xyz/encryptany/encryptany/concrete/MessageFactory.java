@@ -1,5 +1,7 @@
 package xyz.encryptany.encryptany.concrete;
 
+import android.util.Log;
+
 import net.sqlcipher.Cursor;
 
 import java.util.Date;
@@ -13,6 +15,9 @@ import xyz.encryptany.encryptany.interfaces.Message;
 
 public class MessageFactory {
 
+    private static final boolean DEBUG = true;
+    private static final String TAG = "MessageFactory";
+
     private static final String INIT_MESSAGE_TEXT = "LetsStartAnOTRConvo";
 
     public MessageFactory() {
@@ -20,15 +25,25 @@ public class MessageFactory {
     }
 
     public Message createNewInitMessage(String otherParticipant, String app) {
-        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, new Date().getTime());
+        long time = getNow();
+        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time);
     }
 
     public Message createNewMessage(String message, String otherParticipant, String app, long unixDate) {
+        if (DEBUG) {
+            Log.d(TAG, "createNewMessage passed in unixDate: " + unixDate);
+        }
         return new EncryptedMessage(message, otherParticipant, app, unixDate);
     }
 
     public Message createNewMessage(String message, String otherParticipant, String app) {
-        return new EncryptedMessage(message, otherParticipant, app, new Date().getTime());
+        long time = getNow();
+        return new EncryptedMessage(message, otherParticipant, app, time);
+    }
+
+    private static long getNow() {
+        long time = (new Date()).getTime();
+        return time;
     }
 
     public Message[] reconstructConversationMessages(Cursor cursor) {
