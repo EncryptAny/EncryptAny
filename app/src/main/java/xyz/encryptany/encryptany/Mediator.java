@@ -66,6 +66,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
             archiverAdapter.setMessageExists(uuid);
         }
         this.msgRecievedDateToForward = unixDate;
+        this.msgRecievedUUIDToForward = uuid;
         Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid);
         encryptionAdapter.decryptMessage(payload);
     }
