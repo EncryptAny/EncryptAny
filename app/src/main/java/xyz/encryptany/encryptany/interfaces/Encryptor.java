@@ -10,6 +10,5 @@ public interface Encryptor {
     void initialization(Message message);
     void encryptMessage(Message message);
     void decryptMessage(Message message);
-    void setKeys();
     void setEncryptionListener(EncryptionListener listener);
 }

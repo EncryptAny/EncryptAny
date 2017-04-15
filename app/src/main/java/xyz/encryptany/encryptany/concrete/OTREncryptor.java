@@ -110,11 +110,6 @@ public class OTREncryptor implements Encryptor {
     }
 
     @Override
-    public void setKeys() {
-        //otr sets the keys, not overriding interface here
-    }
-
-    @Override
     public void setEncryptionListener(EncryptionListener listener) {
         this.encryptionListener = listener;
         //The local callback is implemented within this file
