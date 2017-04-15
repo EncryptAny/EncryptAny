@@ -26,11 +26,10 @@ import org.spongycastle.crypto.digests.SHA256Digest;
  */
 
 public class Crypto implements Encryptor {
-    private BigInteger dh_g;
-    private BigInteger dh_p;
-    private BigInteger dh_a;
-    private BigInteger dh_A;
     private EncryptionListener encryptionListener;
+    private DHKeyExchanger dhKeyExchanger;
+    private AESmodule aesmodule;
+    private BigInteger myPublicValue;
 
     public Crypto() {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(),1);
@@ -39,96 +38,137 @@ public class Crypto implements Encryptor {
     @Override
     public void initialization(Message message) {
         // This gets called to begin handshake
-        dh_g = new BigInteger(get_g());
-        dh_p = new BigInteger(get_p());
-        SecureRandom secureRandom = new SecureRandom();
-        dh_a = new BigInteger(2048,7,secureRandom);
-        dh_A = new BigInteger(dh_g.modPow(dh_a,dh_p).toString());
-
+        this.dhKeyExchanger = new DHKeyExchanger();
+        dhKeyExchanger.getPublicValue(); //TODO: This needs to be sent to other party
+        BigInteger theirPublicValue = new BigInteger("123"); //TODO: Need to get other party public
+        this.aesmodule = new AESmodule(
+                dhKeyExchanger.dh_mySecret,
+                theirPublicValue,
+                dhKeyExchanger.getP());
+        //TODO: Can preserve key exchange by saving key value
+        aesmodule.getKey();
     }
 
     @Override
     public void encryptMessage(Message message) {
-
+        IV iv = new IV();
+        String s = this.aesmodule.encrypt(message.getMessage(),iv); //TODO: Encrypted string
     }
 
     @Override
     public void decryptMessage(Message message) {
-
+        IV iv = new IV("iv from message"); //TODO: Need to add iv field to each encrypted message
+        String s = this.aesmodule.decrypt(message.getMessage(),iv); //TODO: Decrypted string
     }
 
     @Override
     public void setEncryptionListener(EncryptionListener listener) {
         this.encryptionListener = listener;
     }
-    private String get_g()
-    { // RFC 5114 2048b MODP Group w/ 256-bit Prime Order Subgroup
-        return  "8041367327046189302693984665026706374844608289874374425728797669509435881459140" +
+
+    private class DHKeyExchanger
+    {
+        private BigInteger dh_g;
+        private BigInteger dh_p;
+        private BigInteger dh_mySecret;
+        private BigInteger dh_myPublic;
+
+        public DHKeyExchanger()
+        { // RFC 5114 2048b MODP Group w/ 256-bit Prime Order Subgroup
+            dh_g = new BigInteger(
+                "8041367327046189302693984665026706374844608289874374425728797669509435881459140" +
                 "6626502158328334713284703340646285086922319994018403320461925692873519916899632" +
                 "7965689256248477327858420804098763156962852046406953236127404737444434499665183" +
                 "2979378318849943741662110395995778429270819222431610927356005913836932462099770" +
                 "0762395540428552871380268069604702773262294828180039620044537644009957909740426" +
                 "6367569212075872614586906123644389350913614794241444555184816239146854144435570" +
                 "7785697825741856849161233887307017428371823608125699892904960841221593344499088" +
-                "996021883972185241854777608212592397013510086894908468466292313";
+                "996021883972185241854777608212592397013510086894908468466292313");
+
+            dh_p = new BigInteger(
+                "1712545831761413793019604197925757782640883232403750857339329298164266713974762" +
+                "1778802438775238728592968344613589379932348475613503476932163166973813218698343" +
+                "8164632891441853629126025225404949830905314972329658295365245072698488256583114" +
+                "2029933592229570974326750832252596677395039491925757684203877163274204414247105" +
+                "3509850123605883815857162666917775193496157372656195558305727009891276006514000" +
+                "4093658772181713883199238963093777917625906143118496429613802248519404604217104" +
+                "4936892725297487039587393638790967227488329537748100815047587859027059179835056" +
+                "3488168080923804611822387520198054002990623911454389104774092183");
+
+
+            SecureRandom secureRandom = new SecureRandom();
+            dh_mySecret = new BigInteger(2048,7,secureRandom);
+            dh_myPublic = new BigInteger(dh_g.modPow(dh_mySecret,dh_p).toString());
+        }
+        public BigInteger getPublicValue()  {return dh_myPublic;}
+        public BigInteger getSecretValue()  {return dh_mySecret;}
+        public BigInteger getP()            {return dh_p;}
     }
-    private String get_p()
+
+    private class IV
     {
-        return "17125458317614137930196041979257577826408832324037508573393292981642667139747621" +
-                "7788024387752387285929683446135893799323484756135034769321631669738132186983438" +
-                "1646328914418536291260252254049498309053149723296582953652450726984882565831142" +
-                "0299335922295709743267508322525966773950394919257576842038771632742044142471053" +
-                "5098501236058838158571626669177751934961573726561955583057270098912760065140004" +
-                "0936587721817138831992389630937779176259061431184964296138022485194046042171044" +
-                "9368927252974870395873936387909672274883295377481008150475878590270591798350563" +
-                "488168080923804611822387520198054002990623911454389104774092183";
+        private byte[] iv;
+        public IV(String s_iv)
+        { // Get iv from a message (message receive)
+            this.iv = new byte[16];
+            this.iv = s_iv.getBytes();
+        }
+        public IV()
+        { // Create iv (message send)
+            SecureRandom rng = new SecureRandom();
+            iv = new byte[16];
+            rng.nextBytes(iv);
+        }
+        public byte[] get()
+        {
+            return this.iv;
+        }
     }
--
-    private static class AESkey
+
+    private class AESmodule
     {
         private byte[] key;
-        public AESkey(AESkey ak){this.key = ak.getKey();}
-        public AESkey(
-                BigInteger dh_a,
+
+        public AESmodule(
+                BigInteger dh_mySecret,
                 BigInteger dh_B,
                 BigInteger dh_p)
         {
-            byte[] dh_ab = dh_B.modPow(dh_a,dh_p).toByteArray();
+            /*
+            Encapsulates key gen, encryption, decryption, iv handling
+            Key is gen'd as SHA256 hash of DH common value
+             */
+            byte[] dh_ab = dh_B.modPow(dh_mySecret,dh_p).toByteArray();
             this.key = new byte[32];
             SHA256Digest sha256 = new SHA256Digest();
             sha256.update(dh_ab,0,dh_ab.length);
             sha256.doFinal(this.key,0);
         }
-        public String encryptText(String txt)
+        public AESmodule(byte[] key)
         {
-
+            this.key = key;
         }
-        public byte[] getKey(){return this.key;}
-        /**
-         * Encrypt the given plaintext bytes using the given key
-         * @param data The plaintext to encrypt
-         * @param key The key to use for encryption
-         * @return The encrypted bytes
-         */
-        private static byte[] encrypt(byte[] data, byte[] key)
+
+        public byte[] getKey()
         {
-            // 16 bytes is the IV size for AES256
+            return key;
+        }
+
+        public String encrypt(String data, IV iv) {return encrypt(data.getBytes(),iv).toString();}
+        private byte[] encrypt(byte[] data, IV iv)
+        {
             try
             {
                 PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
-                // Random iv
-                SecureRandom rng = new SecureRandom();
-                byte[] ivBytes = new byte[16];
-                rng.nextBytes(ivBytes);
 
-                cipher.init(true, new ParametersWithIV(new KeyParameter(key), ivBytes));
+                cipher.init(true, new ParametersWithIV(new KeyParameter(key), iv.get()));
                 byte[] outBuf   = new byte[cipher.getOutputSize(data.length)];
 
                 int processed = cipher.processBytes(data, 0, data.length, outBuf, 0);
                 processed += cipher.doFinal(outBuf, processed);
 
-                byte[] outBuf2 = new byte[processed + 16];        // Make room for iv
-                System.arraycopy(ivBytes, 0, outBuf2, 0, 16);    // Add iv
+                byte[] outBuf2 = new byte[processed + 16];              // Make room for iv
+                System.arraycopy(iv.get(), 0, outBuf2, 0, 16);                // Add iv
                 System.arraycopy(outBuf, 0, outBuf2, 16, processed);    // Then the encrypted data
 
                 return outBuf2;
@@ -140,24 +180,17 @@ public class Crypto implements Encryptor {
             return null;
         }
 
-        /**
-         * Decrypt the given data with the given key
-         * @param data The data to decrypt
-         * @param key The key to decrypt with
-         * @return The decrypted bytes
-         */
-        private static byte[] decrypt(byte[] data, byte[] key)
+        public String decrypt(String data, IV iv) {return decrypt(data.getBytes(),iv).toString();}
+        private byte[] decrypt(byte[] data, IV iv)
         {
-            // 16 bytes is the IV size for AES256
             try
             {
                 PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
-                byte[] ivBytes = new byte[16];
-                System.arraycopy(data, 0, ivBytes, 0, ivBytes.length); // Get iv from data
-                byte[] dataonly = new byte[data.length - ivBytes.length];
-                System.arraycopy(data, ivBytes.length, dataonly, 0, data.length    - ivBytes.length);
+                System.arraycopy(data, 0, iv.get(), 0, iv.get().length); // Get iv from data
+                byte[] dataonly = new byte[data.length - iv.get().length];
+                System.arraycopy(data, iv.get().length, dataonly, 0, data.length    - iv.get().length);
 
-                cipher.init(false, new ParametersWithIV(new KeyParameter(key), ivBytes));
+                cipher.init(false, new ParametersWithIV(new KeyParameter(key), iv.get()));
                 byte[] decrypted = new byte[cipher.getOutputSize(dataonly.length)];
                 int len = cipher.processBytes(dataonly, 0, dataonly.length, decrypted,0);
                 len += cipher.doFinal(decrypted, len);
@@ -170,6 +203,7 @@ public class Crypto implements Encryptor {
             }
             return null;
         }
+
     }
 
 }
