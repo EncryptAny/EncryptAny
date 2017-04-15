@@ -35,7 +35,7 @@ public class Crypto implements Encryptor {
         // This gets called to begin handshake
 
         String bigIntValue = "ENCRYPTANYEXCHANGE?:";
-        bigIntValue += dhKeyExchanger.getPublicValue().toString(); //TODO: This needs to be sent to other party
+        bigIntValue += dhKeyExchanger.getPublicValue().toString();
 
         encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
         //optional: Can preserve key exchange by saving key value
@@ -45,7 +45,8 @@ public class Crypto implements Encryptor {
     @Override
     public void encryptMessage(Message message) {
         IV iv = new IV();
-        String s = this.aesmodule.encrypt(message.getMessage(),iv); //TODO: Encrypted string
+        String s ="ENCRYPTANYEXCHANGE@:";
+                s += this.aesmodule.encrypt(message.getMessage(),iv);
 
         encryptionListener.sendEncryptedMessage(s,message.getOtherParticpant(),message.getApp(),iv.get().toString());
     }
