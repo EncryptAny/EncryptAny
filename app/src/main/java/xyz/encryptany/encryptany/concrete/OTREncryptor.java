@@ -47,7 +47,7 @@ public class OTREncryptor implements Encryptor {
         //The message in the case will be loaded with our default string sent from the UI Adapter
         //The UI adapter will send the default string to the mediator and the mediator will construct the message
         //with the appropriate target recipient as well as what app the message is going through.
-        String recipient = message.getAuthor();
+        String recipient = message.getOtherParticpant();
         String messageContent = message.getMessage();
 
         //The app isn't necessarilly the required string for this function, a secondary string to uniquely identify the
@@ -76,7 +76,7 @@ public class OTREncryptor implements Encryptor {
 
 
     public void encryptMessage(Message message) {
-        String recipient = message.getAuthor();
+        String recipient = message.getOtherParticpant();
         String messageContent = message.getMessage();
         String app = message.getApp();
         try {
@@ -93,7 +93,7 @@ public class OTREncryptor implements Encryptor {
     @Override
     public void decryptMessage(Message message) {
         String app = message.getApp();
-        String sender = message.getAuthor();
+        String sender = message.getOtherParticpant();
         String messageContent = message.getMessage();
         try {
 
@@ -132,7 +132,7 @@ class LocalCallback implements OTRCallbacks {
                 + msg.length() + ":\033[35m" + msg + "\033[0m");
         //out.println(msg);
         // out.flush();
-        encryptionListener.sendEncryptedMessage(msg, rec, prot);
+        //encryptionListener.sendEncryptedMessage(msg, rec, prot);
     }
 
     public int getOtrPolicy(OTRContext conn) {

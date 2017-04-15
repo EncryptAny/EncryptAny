@@ -36,6 +36,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     private String uiMessageUUIDToForward;
     private long msgRecievedDateToForward;
     private String msgRecievedUUIDToForward;
+    private String msgReceivedIVToForward;
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -54,12 +55,13 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiMessageUUIDToForward = null;
         msgRecievedDateToForward = 0;
         msgRecievedUUIDToForward = null;
+        msgReceivedIVToForward = null;
     }
 
     /* ============== BEGIN AppListener Methods ============== */
 
     @Override
-    public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate, String uuid) {
+    public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate, String uuid,String iv) {
         if (archiverAdapter.doesMessageExist(uuid)) {
             return;
         } else {
@@ -67,7 +69,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         }
         this.msgRecievedDateToForward = unixDate;
         this.msgRecievedUUIDToForward = uuid;
-        Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid);
+        this.msgReceivedIVToForward = iv;
+        Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid,iv);
         encryptionAdapter.decryptMessage(payload);
     }
 
@@ -81,6 +84,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiMessageUUIDToForward = null;
         msgRecievedDateToForward = 0;
         conversationReady = false;
+        msgReceivedIVToForward = null;
     }
 
     @Override
@@ -147,7 +151,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     /* ============== BEGIN EncryptionListener Methods ============== */
 
     @Override
-    public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
+    public void sendEncryptedMessage(String result, String otherParticipant, String appSource,String iv) {
         uiAdapter.waitForUserSend();
         long dateToUse = this.uiMessageDateToForward;
         if (dateToUse == 0) {
@@ -162,7 +166,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
             uuid = null;
         }
         //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse, uuid);
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse, uuid,iv);
         archiverAdapter.setMessageExists(message.uuid());
         appAdapter.sendMessage(message);
     }
@@ -187,7 +191,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         } else {
             this.msgRecievedUUIDToForward = null;
         }
-        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward, msgRecievedUUIDToForward);
+        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward, msgRecievedUUIDToForward,null);
         uiAdapter.giveMessage(payload);
         archiveMessage(payload);
     }

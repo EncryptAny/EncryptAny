@@ -26,7 +26,7 @@ public class SQLArchiver implements Archiver {
         ContentValues values = new ContentValues();
         values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_MESSAGE, message.getMessage());
         values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION, message.getApp());
-        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR, message.getAuthor());
+        values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR, message.getOtherParticpant());
         values.put(MessageArchiverContract.MessageEntry.COLUMN_NAME_DATE, message.getDate());
 // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert( MessageArchiverContract.MessageEntry.TABLE_NAME , null, values);

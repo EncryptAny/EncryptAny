@@ -28,7 +28,7 @@ public class UnencryptedMessage implements Message {
     }
 
     @Override
-    public String getAuthor() {
+    public String getOtherParticpant() {
         return author;
     }
 
@@ -45,5 +45,10 @@ public class UnencryptedMessage implements Message {
     @Override
     public String uuid() {
         return this.uuid;
+    }
+
+    @Override
+    public String getIV() {
+        return null;
     }
 }

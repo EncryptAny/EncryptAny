@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import xyz.encryptany.encryptany.Mediator;
+import xyz.encryptany.encryptany.concrete.Crypto;
 import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
@@ -40,7 +41,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private static Gson gson = new Gson();
 
     // App Adapter helper variables
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     private static final String TAG = "AccessibilityAppAdapter";
     private static final int DATE_RADIX = 10;
 
@@ -194,6 +195,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         private String dte; //Unix Timestamp
         private String op;  //"Other Participant"
         private String id;  // uuid field
+        private String iv; //initialization vector field
 
         private AdapterMessage() {}
 
@@ -206,6 +208,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             // Garbage Data to be Replaced
             adapterMessage.app = appPkg;
             adapterMessage.op = authorID;
+            adapterMessage.iv = msg.getIV();
             // TODO Determine what to do about garbage data
             return adapterMessage;
         }
@@ -248,6 +251,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         public String getUUID() {
             return id;
         }
+
+        public String getIV(){return iv;}
     }
 
     private String myAuthorID() {
@@ -274,7 +279,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     @Override
     protected void onServiceConnected() {
         // TODO change away from testing encryptor
-        Mediator m = new Mediator(this, uiService, new OTREncryptor(), new MapArchiver());
+        Mediator m = new Mediator(this, uiService, new Crypto(), new MapArchiver());
         super.onServiceConnected();
         uiService.start();
     }
@@ -369,7 +374,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             String pkg = currentWindow.getCurrWindowPkg();
             long date = foundMessage.getDate();
             String uuid = foundMessage.getUUID();
-            appListener.setMessageReceived(msg, otherParticipant, pkg, date, uuid);
+            String iv = foundMessage.getIV();
+            appListener.setMessageReceived(msg, otherParticipant, pkg, date, uuid,iv);
         }
     }
 

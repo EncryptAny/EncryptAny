@@ -19,7 +19,7 @@ import xyz.encryptany.encryptany.interfaces.Message;
 public class MapArchiver implements Archiver {
 
     private static final String TAG = "Archiver";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     // Tree map due to potential sorting capabilities
     Set<String> sentMessages = new HashSet<>();

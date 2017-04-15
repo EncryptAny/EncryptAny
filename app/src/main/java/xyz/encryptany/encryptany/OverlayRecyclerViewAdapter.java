@@ -5,19 +5,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import xyz.encryptany.encryptany.concrete.EncryptedMessage;
-import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.Message;
 
 /**
@@ -51,7 +45,7 @@ public class OverlayRecyclerViewAdapter extends RecyclerView.Adapter<OverlayRecy
     @Override
     public void onBindViewHolder(OverlayRecyclerViewAdapter.ViewHolder holder, int position) {
         Log.d(tag,"OnBindViewholder got text " + mMsgs.get(position).getMessage());
-        holder.tvMsgSender.setText(mMsgs.get(position).getAuthor());
+        holder.tvMsgSender.setText(mMsgs.get(position).getOtherParticpant());
         holder.tvMsgTimestamp.setText(longToTS(mMsgs.get(position).getDate()));
         holder.tvMsgContent.setText(mMsgs.get(position).getMessage());
     }

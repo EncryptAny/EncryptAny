@@ -27,20 +27,20 @@ public class MessageFactory {
 
     public Message createNewInitMessage(String otherParticipant, String app) {
         long time = getNow();
-        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time, getUUID());
+        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time, getUUID(),null);
     }
 
-    public Message createNewMessage(String message, String otherParticipant, String app, long unixDate, String uuid) {
+    public Message createNewMessage(String message, String otherParticipant, String app, long unixDate, String uuid,String iv) {
         if (DEBUG) {
             Log.d(TAG, "createNewMessage passed in unixDate: " + unixDate);
         }
-        return new EncryptedMessage(message, otherParticipant, app, unixDate, uuid);
+        return new EncryptedMessage(message, otherParticipant, app, unixDate, uuid,iv);
     }
 
     public Message createNewMessage(String message, String otherParticipant, String app) {
         long time = getNow();
 
-        return new EncryptedMessage(message, otherParticipant, app, time, getUUID());
+        return new EncryptedMessage(message, otherParticipant, app, time, getUUID(),null);
     }
 
     private static String getUUID() {

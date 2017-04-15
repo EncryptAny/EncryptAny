@@ -5,7 +5,7 @@ package xyz.encryptany.encryptany.listeners;
  */
 
 public interface AppListener {
-    void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate, String uuid);
+    void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate, String uuid,String iv);
     // called usually when the user changes context away from the app (i.e., switches to a different app)
     void resetStatus();
     // called usually when the given app has a valid textEdit to send

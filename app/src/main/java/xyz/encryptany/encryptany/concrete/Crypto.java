@@ -1,14 +1,8 @@
 package xyz.encryptany.encryptany.concrete;
 
-import android.util.Base64;
-
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.sql.Time;
-import java.util.Date;
 
 import xyz.encryptany.encryptany.interfaces.Encryptor;
 import xyz.encryptany.encryptany.interfaces.Message;
@@ -29,36 +23,68 @@ public class Crypto implements Encryptor {
     private EncryptionListener encryptionListener;
     private DHKeyExchanger dhKeyExchanger;
     private AESmodule aesmodule;
-    private BigInteger myPublicValue;
+
 
     public Crypto() {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(),1);
+        this.dhKeyExchanger = new DHKeyExchanger();
     }
 
     @Override
     public void initialization(Message message) {
         // This gets called to begin handshake
-        this.dhKeyExchanger = new DHKeyExchanger();
-        dhKeyExchanger.getPublicValue(); //TODO: This needs to be sent to other party
-        BigInteger theirPublicValue = new BigInteger("123"); //TODO: Need to get other party public
-        this.aesmodule = new AESmodule(
-                dhKeyExchanger.dh_mySecret,
-                theirPublicValue,
-                dhKeyExchanger.getP());
-        //TODO: Can preserve key exchange by saving key value
-        aesmodule.getKey();
+
+        String bigIntValue = "ENCRYPTANYEXCHANGE?:";
+        bigIntValue += dhKeyExchanger.getPublicValue().toString(); //TODO: This needs to be sent to other party
+
+        encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
+        //optional: Can preserve key exchange by saving key value
+        //aesmodule.getKey();
     }
 
     @Override
     public void encryptMessage(Message message) {
         IV iv = new IV();
         String s = this.aesmodule.encrypt(message.getMessage(),iv); //TODO: Encrypted string
+
+        encryptionListener.sendEncryptedMessage(s,message.getOtherParticpant(),message.getApp(),iv.get().toString());
     }
 
     @Override
     public void decryptMessage(Message message) {
-        IV iv = new IV("iv from message"); //TODO: Need to add iv field to each encrypted message
-        String s = this.aesmodule.decrypt(message.getMessage(),iv); //TODO: Decrypted string
+        String msg = message.getMessage();
+
+        String preText = msg.substring(0,20);
+        String content = msg.substring(20);
+        if(preText.equals("ENCRYPTANYEXCHANGE?:")){
+            BigInteger theirPublicValue = new BigInteger(content);
+            this.aesmodule = new AESmodule(
+                    dhKeyExchanger.getSecretValue(),
+                    theirPublicValue,
+                    dhKeyExchanger.getP());
+            String bigIntValue = "ENCRYPTANYEXCHANGE!:";
+            bigIntValue += dhKeyExchanger.getPublicValue().toString();
+
+            encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
+
+        }else if(preText.equals("ENCRYPTANYEXCHANGE!:")){
+            BigInteger theirPublicValue = new BigInteger(content);
+            this.aesmodule = new AESmodule(
+                    dhKeyExchanger.getSecretValue(),
+                    theirPublicValue,
+                    dhKeyExchanger.getP());
+
+            encryptionListener.handshakeComplete();
+        }else if(preText.equals("ENCRYPTANYEXCHANGE@:")){
+            IV iv = new IV(message.getIV());
+            String s = this.aesmodule.decrypt(message.getMessage(),iv);
+            encryptionListener.messageDecrypted(s,message.getOtherParticpant(),message.getApp());
+        }else{
+            //not actually an encryptany message?
+        }
+
+
+
     }
 
     @Override

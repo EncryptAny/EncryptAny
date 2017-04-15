@@ -16,13 +16,15 @@ public class EncryptedMessage implements Message {
     private String app;
     private long date;
     private String uuid;
+    private String initializationVector;
 
-    public EncryptedMessage(String encryptedTxt, String author, String app, long date, String uuid) {
+    public EncryptedMessage(String encryptedTxt, String author, String app, long date, String uuid,String iv) {
         this.encryptedTxt = encryptedTxt;
         this.author = author;
         this.app = app;
         this.date = date;
         this.uuid = uuid;
+        this.initializationVector = iv;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class EncryptedMessage implements Message {
     }
 
     @Override
-    public String getAuthor() {
+    public String getOtherParticpant() {
         return author;
     }
 
@@ -48,5 +50,10 @@ public class EncryptedMessage implements Message {
     @Override
     public String uuid() {
         return this.uuid;
+    }
+
+    @Override
+    public String getIV() {
+        return initializationVector;
     }
 }
