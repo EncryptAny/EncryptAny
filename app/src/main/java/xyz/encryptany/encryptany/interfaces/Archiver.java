@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 public interface Archiver {
     void archiveMessage(Message message);
-    boolean doesMessageExist(long dateOfMessage);
+    void setMessageExists(String UUID);
+    boolean doesMessageExist(String UUID);
     Cursor retrieveAppMessages(String app);
 }

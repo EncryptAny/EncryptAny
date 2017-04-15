@@ -13,6 +13,7 @@ public class UnencryptedMessage implements Message {
     private String author;
     private String app;
     private long date;
+    private String uuid;
 
     public UnencryptedMessage(String unencryptedTxt, String author, String app, long date) {
         this.unencryptedTxt = unencryptedTxt;
@@ -39,5 +40,10 @@ public class UnencryptedMessage implements Message {
     @Override
     public long getDate() {
         return date;
+    }
+
+    @Override
+    public String uuid() {
+        return this.uuid;
     }
 }

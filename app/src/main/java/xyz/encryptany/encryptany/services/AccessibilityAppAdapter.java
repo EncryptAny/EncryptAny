@@ -30,8 +30,6 @@ import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
 import xyz.encryptany.encryptany.testing.MapArchiver;
-import xyz.encryptany.encryptany.testing.NoOpArchiver;
-import xyz.encryptany.encryptany.testing.NoOpEncryptor;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter, SubserviceListener {
 
@@ -45,7 +43,6 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private static boolean DEBUG = true;
     private static final String TAG = "AccessibilityAppAdapter";
     private static final int DATE_RADIX = 10;
-
 
     private AppListener appListener = null;
 
@@ -196,17 +193,19 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         private String app; //Originating App
         private String dte; //Unix Timestamp
         private String op;  //"Other Participant"
+        private String id;  // uuid field
 
         private AdapterMessage() {}
 
-        public static AdapterMessage fromUIMessage(Message msg, String appPkg, String uniqueID) {
+        public static AdapterMessage fromUIMessage(Message msg, String appPkg, String authorID) {
             AdapterMessage adapterMessage = new AdapterMessage();
             // Good data
             adapterMessage.msg = msg.getMessage();
             adapterMessage.dte = Long.toString(msg.getDate(), DATE_RADIX);
+            adapterMessage.id = msg.uuid();
             // Garbage Data to be Replaced
             adapterMessage.app = appPkg;
-            adapterMessage.op = uniqueID;
+            adapterMessage.op = authorID;
             // TODO Determine what to do about garbage data
             return adapterMessage;
         }
@@ -244,6 +243,10 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 
         public String getOriginalJSON() {
             return originalJSON;
+        }
+
+        public String getUUID() {
+            return id;
         }
     }
 
@@ -365,7 +368,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             String otherParticipant = foundMessage.getAuthorID();
             String pkg = currentWindow.getCurrWindowPkg();
             long date = foundMessage.getDate();
-            appListener.setMessageReceived(msg, otherParticipant, pkg, date);
+            String uuid = foundMessage.getUUID();
+            appListener.setMessageReceived(msg, otherParticipant, pkg, date, uuid);
         }
     }
 

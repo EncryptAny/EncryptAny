@@ -11,4 +11,5 @@ public interface Message {
     String getAuthor();
     String getApp();
     long getDate();
+    String uuid();
 }

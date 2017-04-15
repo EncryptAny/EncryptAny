@@ -5,6 +5,7 @@ import android.util.Log;
 import net.sqlcipher.Cursor;
 
 import java.util.Date;
+import java.util.UUID;
 
 import xyz.encryptany.encryptany.concrete.DataBase.MessageArchiverContract;
 import xyz.encryptany.encryptany.interfaces.Message;
@@ -26,19 +27,24 @@ public class MessageFactory {
 
     public Message createNewInitMessage(String otherParticipant, String app) {
         long time = getNow();
-        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time);
+        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time, getUUID());
     }
 
-    public Message createNewMessage(String message, String otherParticipant, String app, long unixDate) {
+    public Message createNewMessage(String message, String otherParticipant, String app, long unixDate, String uuid) {
         if (DEBUG) {
             Log.d(TAG, "createNewMessage passed in unixDate: " + unixDate);
         }
-        return new EncryptedMessage(message, otherParticipant, app, unixDate);
+        return new EncryptedMessage(message, otherParticipant, app, unixDate, uuid);
     }
 
     public Message createNewMessage(String message, String otherParticipant, String app) {
         long time = getNow();
-        return new EncryptedMessage(message, otherParticipant, app, time);
+
+        return new EncryptedMessage(message, otherParticipant, app, time, getUUID());
+    }
+
+    private static String getUUID() {
+        return UUID.randomUUID().toString();
     }
 
     private static long getNow() {

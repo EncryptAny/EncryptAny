@@ -6,6 +6,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.Date;
+import java.util.UUID;
 
 import xyz.encryptany.encryptany.concrete.EncryptedMessage;
 
@@ -23,7 +24,7 @@ public class Overlay extends Activity {
         EncryptedMessage[] dummydata = new EncryptedMessage[dummyAmount];
         for (int i = 1; i != dummyAmount+1; ++i)
         {
-            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date().getTime());
+            dummydata[i-1] = new EncryptedMessage("Dummy encrypted text " + i,"Dummy source " + i,"Dummy app " + i, new Date().getTime(), UUID.randomUUID().toString());
         }
         return dummydata;
     }

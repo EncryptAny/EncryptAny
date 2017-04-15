@@ -32,6 +32,17 @@ public class SQLArchiver implements Archiver {
         long newRowId = db.insert( MessageArchiverContract.MessageEntry.TABLE_NAME , null, values);
     }
 
+    @Override
+    public void setMessageExists(String UUID) {
+        // TODO implement
+    }
+
+    @Override
+    public boolean doesMessageExist(String UUID) {
+        // TODO Implement
+        return false;
+    }
+
     public Cursor retrieveAllMessages(){
         Cursor cursor = db.rawQuery("SELECT * FROM '" + MessageArchiverContract.MessageEntry.TABLE_NAME + "';", null);
         //this cursor should be given to the message factory to contstruct the array of messages to be used in the interface adapter
@@ -43,19 +54,9 @@ public class SQLArchiver implements Archiver {
         return cursor;
     }
 
-    @Override
-    public boolean doesMessageExist(long dateOfMessage) {
-        // TODO implement
-        return false;
-    }
-
     private void InitializeSQLCipher(Activity activity) {
         SQLiteDatabase.loadLibs(activity);
         //TODO: create user determined sql database password
         db = MessageArchiverDbHelper.getInstance(activity).getWritableDatabase("somePass");
-
-
-
-
     }
 }

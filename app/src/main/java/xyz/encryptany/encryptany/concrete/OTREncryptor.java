@@ -124,8 +124,7 @@ public class OTREncryptor implements Encryptor {
 
 class LocalCallback implements OTRCallbacks {
 
-    EncryptionListener encryptionListener;
-
+    private EncryptionListener encryptionListener;
 
     public LocalCallback(EncryptionListener encryptionListener) {
         this.encryptionListener = encryptionListener;
@@ -145,6 +144,7 @@ class LocalCallback implements OTRCallbacks {
         return Policy.DEFAULT;
     }
 
+    @Override
     public void goneSecure(OTRContext context) {
         System.out.println("\033[31mAKE succeeded\033[0m");
         encryptionListener.handshakeComplete();

@@ -5,6 +5,7 @@ import android.util.Log;
 import net.sqlcipher.Cursor;
 
 import java.util.Date;
+import java.util.UUID;
 
 import xyz.encryptany.encryptany.concrete.MessageFactory;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
@@ -32,11 +33,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     private boolean conversationReady;
     private long uiMessageDateToForward;
+    private String uiMessageUUIDToForward;
     private long msgRecievedDateToForward;
-
-    private static final boolean ENFORE_DO_NOT_DUPE = false;
-    private String doNotDuplicate = "";
-
+    private String msgRecievedUUIDToForward;
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -52,18 +51,22 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         encryptionAdapter.setEncryptionListener(this);
 
         uiMessageDateToForward = 0;
+        uiMessageUUIDToForward = null;
         msgRecievedDateToForward = 0;
+        msgRecievedUUIDToForward = null;
     }
 
     /* ============== BEGIN AppListener Methods ============== */
 
     @Override
-    public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate) {
-        if (archiverAdapter.doesMessageExist(unixDate)) {
+    public void setMessageReceived(String messageContent, String otherParticipant, String application, long unixDate, String uuid) {
+        if (archiverAdapter.doesMessageExist(uuid)) {
             return;
+        } else {
+            archiverAdapter.setMessageExists(uuid);
         }
         this.msgRecievedDateToForward = unixDate;
-        Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward);
+        Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid);
         encryptionAdapter.decryptMessage(payload);
     }
 
@@ -74,6 +77,8 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         // Minimize all overlay windows
         uiAdapter.setUIWindowState_Minimized();
         uiMessageDateToForward = 0;
+        uiMessageUUIDToForward = null;
+        msgRecievedDateToForward = 0;
         conversationReady = false;
     }
 
@@ -116,9 +121,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         uiAdapter.waitForProcessing();
         //send message to encryption adapter and then to archiver and app adapter
         //generate message package to send to encryption adapter
-        long time = (new Date()).getTime();
-        this.uiMessageDateToForward = time;
-        Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource, uiMessageDateToForward);
+        Message payload = messageFactory.createNewMessage(messageString, otherParticipant, appSource);
+        this.uiMessageDateToForward = payload.getDate();
+        this.uiMessageUUIDToForward = payload.uuid();
         archiveMessage(payload);
         encryptionAdapter.encryptMessage(payload);
     }
@@ -142,11 +147,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource) {
-        if (ENFORE_DO_NOT_DUPE && this.doNotDuplicate.equals(result)) {
-            Log.d(TAG, "reducing spam so that appAdapter doesn't get mad");
-            return;
-        }
-        this.doNotDuplicate = result;
         uiAdapter.waitForUserSend();
         long dateToUse = this.uiMessageDateToForward;
         if (dateToUse == 0) {
@@ -154,8 +154,15 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         } else {
             this.uiMessageDateToForward = 0;
         }
+        String uuid = this.uiMessageUUIDToForward;
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+        } else {
+            uuid = null;
+        }
         //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse);
+        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse, uuid);
+        archiverAdapter.setMessageExists(message.uuid());
         appAdapter.sendMessage(message);
     }
 
@@ -174,7 +181,12 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         } else {
             this.msgRecievedDateToForward = 0;
         }
-        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward);
+        if (this.msgRecievedUUIDToForward == null) {
+            throw new IllegalStateException("uuid is null on decrypt, which in theory is impossible");
+        } else {
+            this.msgRecievedUUIDToForward = null;
+        }
+        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward, msgRecievedUUIDToForward);
         uiAdapter.giveMessage(payload);
         archiveMessage(payload);
     }
