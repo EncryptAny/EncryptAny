@@ -26,8 +26,7 @@ public class MessageFactory {
     }
 
     public Message createNewInitMessage(String otherParticipant, String app) {
-        long time = getNow();
-        return new EncryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app, time, getUUID(),null);
+        return new UnencryptedMessage(INIT_MESSAGE_TEXT, otherParticipant, app);
     }
 
     public Message createNewMessage(String message, String otherParticipant, String app, long unixDate, String uuid,String iv) {
@@ -37,10 +36,12 @@ public class MessageFactory {
         return new EncryptedMessage(message, otherParticipant, app, unixDate, uuid,iv);
     }
 
-    public Message createNewMessage(String message, String otherParticipant, String app) {
-        long time = getNow();
+    public Message createNewMessage(String message, String otherParticipant, String app, String iv) {
+        return new EncryptedMessage(message, otherParticipant, app, getNow(), getUUID(), iv);
+    }
 
-        return new EncryptedMessage(message, otherParticipant, app, time, getUUID(),null);
+    public Message createNewMessage(String message, String otherParticipant, String app) {
+        return new UnencryptedMessage(message, otherParticipant, app);
     }
 
     private static String getUUID() {
@@ -52,24 +53,24 @@ public class MessageFactory {
         return time;
     }
 
-    public Message[] reconstructConversationMessages(Cursor cursor) {
-        cursor.moveToFirst();
-        Message messages[] = new Message[cursor.getCount()];
-        String author;
-        String message;
-        long date;
-        String application;
-
-        for (int i = 0; i < cursor.getCount(); ++i) {
-            author = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR));
-            message = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_MESSAGE));
-            date = cursor.getLong(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_DATE));
-            application = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION));
-            messages[i] = new UnencryptedMessage(message, author, application, date);
-        }
-
-        return messages;
-    }
+//    public Message[] reconstructConversationMessages(Cursor cursor) {
+//        cursor.moveToFirst();
+//        Message messages[] = new Message[cursor.getCount()];
+//        String author;
+//        String message;
+//        long date;
+//        String application;
+//
+//        for (int i = 0; i < cursor.getCount(); ++i) {
+//            author = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_AUTHOR));
+//            message = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_MESSAGE));
+//            date = cursor.getLong(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_DATE));
+//            application = cursor.getString(cursor.getColumnIndex(MessageArchiverContract.MessageEntry.COLUMN_NAME_APPLICATION));
+//            messages[i] = new UnencryptedMessage(message, author, application, date);
+//        }
+//
+//        return messages;
+//    }
 
 
 }

@@ -24,6 +24,7 @@ import xyz.encryptany.encryptany.listeners.UIListener;
 public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     private static final String TAG = "Mediator";
+    private static final boolean DEBUG = true;
 
     AppAdapter appAdapter;
     UIAdapter uiAdapter;
@@ -71,7 +72,9 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         this.msgRecievedUUIDToForward = uuid;
         this.msgReceivedIVToForward = iv;
         Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid,iv);
-        Log.d(TAG, "setMessageReceived: Got iv " + payload.getIV());
+        if (DEBUG) {
+            Log.d(TAG, "setMessageReceived: Got iv " + payload.getIV());
+        }
         encryptionAdapter.decryptMessage(payload);
     }
 
@@ -104,8 +107,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void messageSent() {
-//        // TODO fix this bug
-//        conversationReady = true;
         if (conversationReady) {
             // means just a normal message, go back to green
             uiAdapter.doneWaiting();
@@ -154,20 +155,30 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource,String iv) {
         uiAdapter.waitForUserSend();
-        long dateToUse = this.uiMessageDateToForward;
-        if (dateToUse == 0) {
-            dateToUse = getNow();
+        Message message;
+        if (conversationReady && this.uiMessageDateToForward != 0 && this.uiMessageUUIDToForward != null) {
+            message = messageFactory.createNewMessage(
+                    result,
+                    otherParticipant,
+                    appSource,
+                    this.uiMessageDateToForward,
+                    this.uiMessageUUIDToForward,
+                    iv
+            );
         } else {
+            if(DEBUG) {
+                Log.d(TAG, "Message is probably a negotiation message: it does not contain one of the necessary parameters or conversation ready is false.");
+            }
             this.uiMessageDateToForward = 0;
-        }
-        String uuid = this.uiMessageUUIDToForward;
-        if (uuid == null) {
-            uuid = UUID.randomUUID().toString();
-        } else {
             this.uiMessageUUIDToForward = null;
+            message = messageFactory.createNewMessage(
+                    result,
+                    otherParticipant,
+                    appSource,
+                    iv
+            );
         }
         //app adapter call with new message from the encrypted string
-        Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse, uuid,iv);
         archiverAdapter.setMessageExists(message.uuid());
         appAdapter.sendMessage(message);
     }
@@ -204,12 +215,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
             uiAdapter.setUIWindowState_Minimized();
         }
     }
-
-    private static long getNow() {
-        long time = (new Date()).getTime();
-        return time;
-    }
-
 
     private void decryptMessage(Message message) {
         encryptionAdapter.decryptMessage(message);
