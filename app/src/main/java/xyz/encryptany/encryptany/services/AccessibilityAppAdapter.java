@@ -33,6 +33,9 @@ import xyz.encryptany.encryptany.testing.MapArchiver;
 
 public class AccessibilityAppAdapter extends AccessibilityService implements AppAdapter, SubserviceListener {
 
+    private static boolean DEBUG = true;
+    private static final String TAG = "AccessibilityAppAdapter";
+
     // Mediator-Related Stuff
     private UIService uiService = new UIService(this);
 
@@ -40,8 +43,6 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
     private static Gson gson = new Gson();
 
     // App Adapter helper variables
-    private static boolean DEBUG = false;
-    private static final String TAG = "AccessibilityAppAdapter";
     private static final int DATE_RADIX = 10;
 
     private AppListener appListener = null;
@@ -513,7 +514,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         );
         fillState.textReceived(adapterMessage.toJson());
         if (DEBUG) {
-            Log.d(TAG, "Ready to fill!");
+            Log.d(TAG, "Message Recieved from mediator. Ready to fill!");
         }
         // we don't attempt a message fill right away due to issues with
         // the ui interfering with our fill.

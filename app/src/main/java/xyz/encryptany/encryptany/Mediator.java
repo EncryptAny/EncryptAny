@@ -87,6 +87,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         conversationReady = false;
         msgReceivedIVToForward = null;
         appAdapterIsReady = false;
+        messageToSend = null;
     }
 
     @Override
@@ -193,7 +194,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if (appAdapterIsReady) {
             // if the appAdapter is ready, go ahead and straight up send it!
             appAdapter.sendMessage(message);
-            appAdapterIsReady = false;
         } else {
             if (messageToSend == null) {
                 messageToSend = message;
