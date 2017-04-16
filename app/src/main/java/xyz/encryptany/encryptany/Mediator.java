@@ -164,7 +164,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
         } else {
-            uuid = null;
+            this.uiMessageUUIDToForward = null;
         }
         //app adapter call with new message from the encrypted string
         Message message = messageFactory.createNewMessage(result, otherParticipant, appSource, dateToUse, uuid,iv);

@@ -216,7 +216,7 @@ public class Crypto implements Encryptor {
             return null;
         }
 
-        public String decrypt(String data, IV iv) {return decrypt(data.getBytes(),iv).toString();}
+        public String decrypt(String data, IV iv) {return decrypt(Base64.decode(data,0),iv).toString();}
         private byte[] decrypt(byte[] data, IV iv)
         {
             Log.d(TAG, "decrypt: Got iv: " + iv.get().toString());
