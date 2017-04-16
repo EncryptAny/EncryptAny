@@ -26,7 +26,6 @@ import java.util.List;
 
 import xyz.encryptany.encryptany.Mediator;
 import xyz.encryptany.encryptany.concrete.Crypto;
-import xyz.encryptany.encryptany.concrete.OTREncryptor;
 import xyz.encryptany.encryptany.listeners.AppListener;
 import xyz.encryptany.encryptany.interfaces.AppAdapter;
 import xyz.encryptany.encryptany.interfaces.Message;
