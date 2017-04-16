@@ -429,19 +429,21 @@ public class UIService extends Subservice implements UIAdapter {
     }
 
     private void chathead_click(){
+        if (uiWindowState == UIWindowState.SHOWING || uiWindowState == UIWindowState.EDITING_TEXT) {
+            setUIWindowState_Minimized();
+            return;
+        }
         if(uiStatus == UIStatus.READY || uiStatus == UIStatus.ACTIVE) {
-            if (uiWindowState == UIWindowState.SHOWING) {
-                setUIWindowState_Minimized();
-            } else {
-                if (uiWindowState == uiWindowState.MINIMIZED) {
-                    overlayView.setVisibility(View.VISIBLE);
-                    uiWindowState = UIWindowState.SHOWING;
-                    if (uiStatus == UIStatus.READY)
-                        setUIStatus(UIStatus.ACTIVE);
-                }
+            if (uiListener.isConversationReady()) {
+                overlayView.setVisibility(View.VISIBLE);
+                uiWindowState = UIWindowState.SHOWING;
+                if (uiStatus == UIStatus.READY)
+                    setUIStatus(UIStatus.ACTIVE);
+            }
+            else {
+                uiListener.startEncryptionProcess(authorName,activeApp);
             }
         }
-
     }
 
 
@@ -621,6 +623,7 @@ public class UIService extends Subservice implements UIAdapter {
     @Override
     public void giveMessage(Message msg) {
         mAdapter.addMessage(msg);
+        setUIStatus(UIStatus.READY);
         showMsg("Message Received.");
     }
 
