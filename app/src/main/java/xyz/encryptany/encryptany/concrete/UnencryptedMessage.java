@@ -1,6 +1,7 @@
 package xyz.encryptany.encryptany.concrete;
 
 import java.util.Date;
+import java.util.UUID;
 
 import xyz.encryptany.encryptany.interfaces.Message;
 
@@ -15,11 +16,12 @@ public class UnencryptedMessage implements Message {
     private long date;
     private String uuid;
 
-    public UnencryptedMessage(String unencryptedTxt, String author, String app, long date) {
+    public UnencryptedMessage(String unencryptedTxt, String author, String app) {
         this.unencryptedTxt = unencryptedTxt;
         this.author = author;
         this.app = app;
-        this.date = date;
+        this.date = (new Date()).getTime();
+        this.uuid = UUID.randomUUID().toString();
     }
 
     @Override
