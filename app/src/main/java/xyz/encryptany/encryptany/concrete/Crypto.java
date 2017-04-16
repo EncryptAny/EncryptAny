@@ -188,7 +188,7 @@ public class Crypto implements Encryptor {
             return key;
         }
 
-        public String encrypt(String data, IV iv) {return encrypt(data.getBytes(),iv).toString();}
+        public String encrypt(String data, IV iv) {return Base64.encodeToString(encrypt(data.getBytes(),iv),0);}
         private byte[] encrypt(byte[] data, IV iv)
         {
             Log.d(TAG, "encrypt: Got iv: " + iv.toString());
