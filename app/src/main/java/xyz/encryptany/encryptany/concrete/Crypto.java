@@ -1,5 +1,8 @@
 package xyz.encryptany.encryptany.concrete;
 
+import android.util.Base64;
+import android.util.Log;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -23,6 +26,8 @@ public class Crypto implements Encryptor {
     private EncryptionListener encryptionListener;
     private DHKeyExchanger dhKeyExchanger;
     private AESmodule aesmodule;
+
+    private static final String TAG = "Crypto";
 
 
     public Crypto() {
@@ -48,7 +53,7 @@ public class Crypto implements Encryptor {
         String s ="ENCRYPTANYEXCHANGE@:";
                 s += this.aesmodule.encrypt(message.getMessage(),iv);
 
-        encryptionListener.sendEncryptedMessage(s,message.getOtherParticpant(),message.getApp(),iv.get().toString());
+        encryptionListener.sendEncryptedMessage(s,message.getOtherParticpant(),message.getApp(),iv.get_s());
     }
 
     @Override
@@ -67,6 +72,7 @@ public class Crypto implements Encryptor {
             bigIntValue += dhKeyExchanger.getPublicValue().toString();
 
             encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
+            encryptionListener.handshakeComplete();
 
         }else if(preText.equals("ENCRYPTANYEXCHANGE!:")){
             BigInteger theirPublicValue = new BigInteger(content);
@@ -78,14 +84,11 @@ public class Crypto implements Encryptor {
             encryptionListener.handshakeComplete();
         }else if(preText.equals("ENCRYPTANYEXCHANGE@:")){
             IV iv = new IV(message.getIV());
-            String s = this.aesmodule.decrypt(message.getMessage(),iv);
+            String s = this.aesmodule.decrypt(content,iv);
             encryptionListener.messageDecrypted(s,message.getOtherParticpant(),message.getApp());
         }else{
             //not actually an encryptany message?
         }
-
-
-
     }
 
     @Override
@@ -138,7 +141,7 @@ public class Crypto implements Encryptor {
         public IV(String s_iv)
         { // Get iv from a message (message receive)
             this.iv = new byte[16];
-            this.iv = s_iv.getBytes();
+            this.iv = Base64.decode(s_iv,0);
         }
         public IV()
         { // Create iv (message send)
@@ -149,6 +152,10 @@ public class Crypto implements Encryptor {
         public byte[] get()
         {
             return this.iv;
+        }
+        public String get_s()
+        {
+            return Base64.encodeToString(this.iv,0);
         }
     }
 
@@ -184,6 +191,8 @@ public class Crypto implements Encryptor {
         public String encrypt(String data, IV iv) {return encrypt(data.getBytes(),iv).toString();}
         private byte[] encrypt(byte[] data, IV iv)
         {
+            Log.d(TAG, "encrypt: Got iv: " + iv.toString());
+            Log.d(TAG, "encrypt: Got data: " + data.toString());
             try
             {
                 PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
@@ -195,7 +204,7 @@ public class Crypto implements Encryptor {
                 processed += cipher.doFinal(outBuf, processed);
 
                 byte[] outBuf2 = new byte[processed + 16];              // Make room for iv
-                System.arraycopy(iv.get(), 0, outBuf2, 0, 16);                // Add iv
+                System.arraycopy(iv.get(), 0, outBuf2, 0, 16);          // Add iv
                 System.arraycopy(outBuf, 0, outBuf2, 16, processed);    // Then the encrypted data
 
                 return outBuf2;
@@ -210,6 +219,8 @@ public class Crypto implements Encryptor {
         public String decrypt(String data, IV iv) {return decrypt(data.getBytes(),iv).toString();}
         private byte[] decrypt(byte[] data, IV iv)
         {
+            Log.d(TAG, "decrypt: Got iv: " + iv.get().toString());
+            Log.d(TAG, "decrypt: Got data: " + data.toString());
             try
             {
                 PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));

@@ -71,6 +71,7 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         this.msgRecievedUUIDToForward = uuid;
         this.msgReceivedIVToForward = iv;
         Message payload = messageFactory.createNewMessage(messageContent, otherParticipant, application, uiMessageDateToForward, uuid,iv);
+        Log.d(TAG, "setMessageReceived: Got iv " + payload.getIV());
         encryptionAdapter.decryptMessage(payload);
     }
 
