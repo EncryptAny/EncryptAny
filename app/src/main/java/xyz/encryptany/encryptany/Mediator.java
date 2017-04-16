@@ -193,17 +193,19 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     @Override
     public void messageDecrypted(String result, String otherParticipant, String appSource) {
         //display decrypted message to UI and store in archiver
-        if (this.msgRecievedDateToForward == 0) {
+        long date = this.msgRecievedDateToForward;
+        if (date == 0) {
             throw new IllegalStateException("message is zero on decrypt, which in theory is impossible");
         } else {
             this.msgRecievedDateToForward = 0;
         }
-        if (this.msgRecievedUUIDToForward == null) {
+        String uuid = this.msgRecievedUUIDToForward;
+        if (uuid == null) {
             throw new IllegalStateException("uuid is null on decrypt, which in theory is impossible");
         } else {
             this.msgRecievedUUIDToForward = null;
         }
-        Message payload = messageFactory.createNewMessage(result, otherParticipant, appSource, msgRecievedDateToForward, msgRecievedUUIDToForward,null);
+        Message payload = messageFactory.createNewDecryptedMessage(result, otherParticipant, appSource, date, uuid);
         uiAdapter.giveMessage(payload);
         archiveMessage(payload);
     }

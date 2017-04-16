@@ -40,6 +40,10 @@ public class MessageFactory {
         return new EncryptedMessage(message, otherParticipant, app, getNow(), getUUID(), iv);
     }
 
+    public Message createNewDecryptedMessage(String message, String appSource, String otherParticipant, long time, String uuid) {
+        return new UnencryptedMessage(message, appSource, otherParticipant, uuid);
+    }
+
     public Message createNewMessage(String message, String otherParticipant, String app) {
         return new UnencryptedMessage(message, otherParticipant, app);
     }

@@ -16,6 +16,14 @@ public class UnencryptedMessage implements Message {
     private long date;
     private String uuid;
 
+    public UnencryptedMessage(String unencryptedTxt, String author, String app, String uuid) {
+        this.unencryptedTxt = unencryptedTxt;
+        this.author = author;
+        this.app = app;
+        this.date = (new Date()).getTime();
+        this.uuid = uuid;
+    }
+
     public UnencryptedMessage(String unencryptedTxt, String author, String app) {
         this.unencryptedTxt = unencryptedTxt;
         this.author = author;
