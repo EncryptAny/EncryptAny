@@ -29,7 +29,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     testCompile 'junit:junit:4.12'
     compile 'com.google.code.gson:gson:2.8.0'
-    compile files('../otr-library/otr-library.jar')
     compile 'com.android.support:recyclerview-v7:25.1.0'
     compile project(':android-database-sqlcipher-3.5.6')
     compile 'com.google.android.gms:play-services-gcm:10.2.1'

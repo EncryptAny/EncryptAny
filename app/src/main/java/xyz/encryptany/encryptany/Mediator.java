@@ -26,18 +26,22 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     private static final String TAG = "Mediator";
     private static final boolean DEBUG = true;
 
-    AppAdapter appAdapter;
-    UIAdapter uiAdapter;
-    Encryptor encryptionAdapter;
-    Archiver archiverAdapter;
-    MessageFactory messageFactory;
+    private AppAdapter appAdapter;
+    private UIAdapter uiAdapter;
+    private Encryptor encryptionAdapter;
+    private Archiver archiverAdapter;
+    private MessageFactory messageFactory;
 
-    private boolean conversationReady;
-    private long uiMessageDateToForward;
-    private String uiMessageUUIDToForward;
-    private long msgRecievedDateToForward;
-    private String msgRecievedUUIDToForward;
-    private String msgReceivedIVToForward;
+    // App adapter status
+    private boolean appAdapterIsReady = false;
+    private Message messageToSend = null;
+
+    private boolean conversationReady = false;
+    private long uiMessageDateToForward = 0;
+    private String uiMessageUUIDToForward = null;
+    private long msgRecievedDateToForward = 0;
+    private String msgRecievedUUIDToForward = null;
+    private String msgReceivedIVToForward = null;
 
     public Mediator(AppAdapter appAdapter, UIAdapter uiAdapter, Encryptor encryptionAdapter, Archiver archiverAdapter) {
         this.appAdapter = appAdapter;
@@ -46,17 +50,10 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         this.archiverAdapter = archiverAdapter;
         messageFactory = new MessageFactory();
 
-        conversationReady = false;
         this.encryptionAdapter.setEncryptionListener(this);
         appAdapter.setMessageUpdatedListener(this);
         uiAdapter.setUIListener(this);
         encryptionAdapter.setEncryptionListener(this);
-
-        uiMessageDateToForward = 0;
-        uiMessageUUIDToForward = null;
-        msgRecievedDateToForward = 0;
-        msgRecievedUUIDToForward = null;
-        msgReceivedIVToForward = null;
     }
 
     /* ============== BEGIN AppListener Methods ============== */
@@ -89,14 +86,20 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         msgRecievedDateToForward = 0;
         conversationReady = false;
         msgReceivedIVToForward = null;
+        appAdapterIsReady = false;
     }
 
     @Override
     public void readyForMessage() {
         // If user closed EncryptAny
         // NOPE CHUCK TESTA (aka, reopen the encryptany icon)
+        appAdapterIsReady = true;
         showUIIfHidden();
         uiAdapter.enable();
+        if (messageToSend != null) {
+            appAdapter.sendMessage(messageToSend);
+            messageToSend = null;
+        }
     }
 
     @Override
@@ -154,7 +157,6 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
 
     @Override
     public void sendEncryptedMessage(String result, String otherParticipant, String appSource,String iv) {
-        uiAdapter.waitForUserSend();
         Message message;
         if (conversationReady && this.uiMessageDateToForward != 0 && this.uiMessageUUIDToForward != null) {
             message = messageFactory.createNewMessage(
@@ -180,7 +182,20 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
         }
         //app adapter call with new message from the encrypted string
         archiverAdapter.setMessageExists(message.uuid());
-        appAdapter.sendMessage(message);
+
+        // tell the user to do their stuff
+        uiAdapter.waitForUserSend();
+        if (appAdapterIsReady) {
+            // if the appAdapter is ready, go ahead and straight up send it!
+            appAdapter.sendMessage(message);
+            appAdapterIsReady = false;
+        } else {
+            if (messageToSend == null) {
+                messageToSend = message;
+            } else {
+                throw new IllegalStateException("Trying to another message before previous one was filled");
+            }
+        }
     }
 
     @Override

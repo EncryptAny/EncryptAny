@@ -59,6 +59,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         public FillState(AppListener appListener) {
             this.appListener = appListener;
         }
+
         private enum FillStateStatus {
             NOT_FILLABLE,
             READY,
@@ -121,7 +122,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
 
         public void appFilled() {
-            if(advanceState(FillStateStatus.TEXT_RECEIVED, FillStateStatus.FILLED, true)) {
+            if (advanceState(FillStateStatus.TEXT_RECEIVED, FillStateStatus.FILLED, true)) {
                 appListener.waitingForSend();
             }
         }
@@ -153,6 +154,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         private CurrentWindow() {
             this("", "");
         }
+
         private CurrentWindow(String currWindowActivity, String currWindowPkg) {
             this.currWindowActivity = currWindowActivity;
             this.currWindowPkg = currWindowPkg;
@@ -162,12 +164,15 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         public String getCurrWindowActivity() {
             return currWindowActivity;
         }
+
         public String getCurrWindowPkg() {
             return currWindowPkg;
         }
+
         public boolean isCurrentPackage(String pkg) {
             return currWindowPkg.equals(pkg);
         }
+
         public boolean isCurrentActivity(String activity) {
             return currWindowActivity.equals(activity);
         }
@@ -177,9 +182,11 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         public AccessibilityEvent getCurrTextViewEvent() {
             return currTextViewEvent;
         }
+
         public AccessibilityNodeInfo getCurrTextViewNodeInfo() {
             return currTextViewNodeInfo;
         }
+
         public void setCurrTextView(AccessibilityEvent currTextViewEvent, AccessibilityNodeInfo currTextViewNodeInfo) {
             this.currTextViewEvent = currTextViewEvent;
             this.currTextViewNodeInfo = currTextViewNodeInfo;
@@ -196,7 +203,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         private String id;  // uuid field
         private String iv; //initialization vector field
 
-        private AdapterMessage() {}
+        private AdapterMessage() {
+        }
 
         public static AdapterMessage fromUIMessage(Message msg, String appPkg, String authorID) {
             AdapterMessage adapterMessage = new AdapterMessage();
@@ -211,6 +219,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             // TODO Determine what to do about garbage data
             return adapterMessage;
         }
+
         public static AdapterMessage fromJson(String rawText) {
             AdapterMessage je;
             try {
@@ -223,6 +232,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             }
             return je;
         }
+
         public String toJson() {
             return gson.toJson(this);
         }
@@ -251,7 +261,9 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             return id;
         }
 
-        public String getIV(){return iv;}
+        public String getIV() {
+            return iv;
+        }
     }
 
     private String myAuthorID() {
@@ -318,7 +330,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             fillState.reset();
         }
         // if the currentWindow is null, we really can't do anything without causing exceptions...
-        if(currentWindow == null) {
+        if (currentWindow == null) {
             return;
         }
 
@@ -331,7 +343,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
         // check for any EditTexts...
         boolean isEditText = event.getClassName().equals("android.widget.EditText");
-        if(isEditText) {
+        if (isEditText) {
             if (DEBUG) {
                 Log.d(TAG, "Found EditText!");
             }
@@ -374,12 +386,13 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
             long date = foundMessage.getDate();
             String uuid = foundMessage.getUUID();
             String iv = foundMessage.getIV();
-            appListener.setMessageReceived(msg, otherParticipant, pkg, date, uuid,iv);
+            appListener.setMessageReceived(msg, otherParticipant, pkg, date, uuid, iv);
         }
     }
 
     /**
      * Refreshes current window depending on whether the window state has changed! :)
+     *
      * @param event
      * @param currentWindow
      * @return either a new or old currentWindow depending on wether things have changed.
@@ -452,8 +465,8 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
 
     // built in, must-be-overrriden accessibility service method.
     @Override
-    public void onInterrupt() {}
-
+    public void onInterrupt() {
+    }
 
     // attempts to look for messages given a source node.
     private List<AdapterMessage> lookForMessages(AccessibilityNodeInfo source) {
@@ -485,7 +498,7 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
                 foundMessages.add(msg);
             }
         }
-        for (int i=0; i < ani.getChildCount(); ++i) {
+        for (int i = 0; i < ani.getChildCount(); ++i) {
             ++depthInt;
             lookForMessagesHelper(ani.getChild(i), foundMessages, depth + " " + depthInt, depthInt);
         }
@@ -504,10 +517,6 @@ public class AccessibilityAppAdapter extends AccessibilityService implements App
         }
         // we don't attempt a message fill right away due to issues with
         // the ui interfering with our fill.
-    }
-
-    private static boolean isEmptyOrNull(String str) {
-        return str == null || str.isEmpty();
     }
 
     @Override
