@@ -11,5 +11,6 @@ import net.sqlcipher.Cursor;
 public interface UIListener {
     void sendMessageFromUIAdapter(String messageContent, String otherParticipant,String application);
     void startEncryptionProcess(String otherParticipant, String app);
+    boolean isConversationReady();
     Cursor getOldMessages(String app);
 }

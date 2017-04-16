@@ -148,6 +148,11 @@ public class Mediator implements AppListener, EncryptionListener, UIListener {
     }
 
     @Override
+    public boolean isConversationReady() {
+        return conversationReady;
+    }
+
+    @Override
     public Cursor getOldMessages(String app) {
         // TODO see if this actually matters in anything and if so do something but if not oh well
         return archiverAdapter.retrieveAppMessages(app);
