@@ -40,7 +40,7 @@ public class Crypto implements Encryptor {
         // This gets called to begin handshake
 
         String bigIntValue = "ENCRYPTANYEXCHANGE?:";
-        bigIntValue += dhKeyExchanger.getPublicValue().toString();
+        bigIntValue += dhKeyExchanger.getPublicValue().toString(Character.MAX_RADIX);
 
         encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
         //optional: Can preserve key exchange by saving key value
@@ -63,19 +63,19 @@ public class Crypto implements Encryptor {
         String preText = msg.substring(0,20);
         String content = msg.substring(20);
         if(preText.equals("ENCRYPTANYEXCHANGE?:")){
-            BigInteger theirPublicValue = new BigInteger(content);
+            BigInteger theirPublicValue = new BigInteger(content,Character.MAX_RADIX);
             this.aesmodule = new AESmodule(
                     dhKeyExchanger.getSecretValue(),
                     theirPublicValue,
                     dhKeyExchanger.getP());
             String bigIntValue = "ENCRYPTANYEXCHANGE!:";
-            bigIntValue += dhKeyExchanger.getPublicValue().toString();
+            bigIntValue += dhKeyExchanger.getPublicValue().toString(Character.MAX_RADIX);
 
             encryptionListener.sendEncryptedMessage(bigIntValue,message.getOtherParticpant(),message.getApp(),null);
             encryptionListener.handshakeComplete();
 
         }else if(preText.equals("ENCRYPTANYEXCHANGE!:")){
-            BigInteger theirPublicValue = new BigInteger(content);
+            BigInteger theirPublicValue = new BigInteger(content, Character.MAX_RADIX);
             this.aesmodule = new AESmodule(
                     dhKeyExchanger.getSecretValue(),
                     theirPublicValue,
